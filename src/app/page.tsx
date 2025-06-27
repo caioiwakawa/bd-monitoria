@@ -11,7 +11,7 @@ export default function Login() {
                 <form>
                     <FormBox placeholder="Matrícula"/>
                     <FormBox placeholder="Senha" senha={true}/>
-                    <button type="submit" className="w-40 h-20 mx-46 mb-5 bg-unbblue rounded-3xl border-1 border-black text-2xl text-white">Entrar</button>
+                    <Link href="/feed"><button type="submit" className="w-40 h-20 mx-46 mb-5 bg-unbblue rounded-3xl border-1 border-black text-2xl text-white">Entrar</button></Link>
                 </form>
                 <Link href="/cadastro/docente"><h1 className="text-center text-white my-5">Primeiro acesso, docente? Crie sua conta</h1></Link>
                 <Link href="/cadastro/discente"><h1 className="text-center text-white my-5">Primeiro acesso, discente? Crie sua conta</h1></Link>
