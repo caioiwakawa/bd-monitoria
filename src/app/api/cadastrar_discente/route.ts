@@ -5,6 +5,14 @@ const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
   const form = await req.formData();
+  const file = form.get("foto_perfil") as File | null;
+
+  let fotoBuffer: Buffer | null = null;
+
+  if (file && file instanceof File) {
+    const arrayBuffer = await file.arrayBuffer();
+    fotoBuffer = Buffer.from(arrayBuffer);
+  }
 
   const matricula_aluno = parseInt(form.get("matricula") as string);
   const nome_aluno = form.get("nome") as string;
@@ -14,6 +22,7 @@ export async function POST(req: NextRequest) {
   const ira = parseFloat(form.get("ira") as string);
   const status_aluno = form.get("status") as string;
   const nomeCurso = form.get("curso") as string;
+  const telefones = form.getAll('telefones[]') as string[]
 
   try {
     const curso = await prisma.curso.findFirst({
@@ -34,8 +43,20 @@ export async function POST(req: NextRequest) {
         ira,
         status_aluno,
         codigo_curso: curso.codigo_curso,
+        foto_perfil: fotoBuffer,
       },
     });
+
+  for (const numero of telefones) {
+    if (numero.trim() === '') continue;
+
+    await prisma.aluno_telefones.create({
+      data: {
+        num_telefone_aluno: numero,
+        matricula_aluno: matricula_aluno,
+      },
+    });
+  }
 
     return NextResponse.json({ ok: true, aluno });
   } catch (error) {

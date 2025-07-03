@@ -16,6 +16,7 @@ model aluno {
   ira                     Float
   status_aluno            String             @db.VarChar(15)
   codigo_curso            Int
+  foto_perfil             Bytes?
   curso                   curso              @relation(fields: [codigo_curso], references: [codigo_curso], onDelete: NoAction, onUpdate: NoAction)
   aluno_elegivel          aluno_elegivel?
   aluno_matriculado       aluno_matriculado?
