@@ -1,17 +1,39 @@
+"use client"
 import FormBox from "@/components/form_box";
 import LoginHeader from "@/components/login_header";
 import Link from "next/link";
 
 export default function Login() {
+
+    async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+
+    const res = await fetch('/api/login', {
+        method: 'POST',
+        body: formData,
+    });
+
+    if (res.ok) {
+        const data = await res.json();
+        // Redireciona para o feed da matrícula (ou outro local)
+        window.location.href = `/feed`;
+    } else {
+        alert("Matrícula ou senha inválida.");
+    }
+    }
+
     return (
         <main>
             <LoginHeader/>
             <div className="relative mx-auto top-20 w-132 h-144 bg-unblightblue border-2 border-unbblue rounded-4xl">
                 <h1 className="text-center my-7 text-4xl font-medium w-full">Login</h1>
-                <form>
-                    <FormBox placeholder="Matrícula"/>
-                    <FormBox placeholder="Senha" senha={true}/>
-                    <Link href="/feed"><button type="submit" className="w-40 h-20 mx-46 mb-5 bg-unbblue rounded-3xl border-1 border-black text-2xl text-white">Entrar</button></Link>
+                <form onSubmit={handleSubmit}>
+                    <FormBox name="matricula" placeholder="Matrícula" />
+                    <FormBox name="cpf" placeholder="CPF" />
+                    <button type="submit" className="w-40 h-20 mx-46 mb-5 bg-unbblue rounded-3xl border-1 border-black text-2xl text-white">
+                    Entrar
+                    </button>
                 </form>
                 <Link href="/cadastro/docente"><h1 className="text-center text-white my-5">Primeiro acesso, docente? Crie sua conta</h1></Link>
                 <Link href="/cadastro/discente"><h1 className="text-center text-white my-5">Primeiro acesso, discente? Crie sua conta</h1></Link>
