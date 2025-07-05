@@ -22,7 +22,7 @@ export async function GET(
     return new NextResponse(new Blob([Buffer.from(aluno.foto_perfil)]), {
       status: 200,
       headers: {
-        "Content-Type": "image/svg+xml", // SVG aqui!
+        "Content-Type": "image/png", // SVG aqui!
         "Content-Length": aluno.foto_perfil.length.toString(),
         "Cache-Control": "public, max-age=3600",
       },

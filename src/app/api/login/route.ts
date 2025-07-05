@@ -12,13 +12,13 @@ export async function POST(req: NextRequest) {
 
     try {
         // Verificar aluno
-        const aluno = await prisma.aluno.findUnique({ where: { matricula_aluno: matricula } });
+        const aluno = await prisma.tb_aluno.findUnique({ where: { matricula_aluno: matricula } });
         if (aluno && aluno.cpf_aluno === cpf) {
             return NextResponse.json({ tipo: "aluno", matricula });
         }
 
         // Verificar professor
-        const professor = await prisma.professor.findUnique({ where: { matricula_professor: matricula } });
+        const professor = await prisma.tb_professor.findUnique({ where: { matricula_professor: matricula } });
         console.log("Professor encontrado:", professor);
         if (professor && professor.cpf_professor === cpf) {
             return NextResponse.json({ tipo: "professor", matricula });

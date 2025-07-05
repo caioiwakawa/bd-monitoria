@@ -1,4 +1,5 @@
 import "./globals.css";
+import { UserProvider } from "@/context/UserContext"; // ajuste se não estiver usando /src
 
 export default function RootLayout({
   children,
@@ -6,9 +7,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="pt-br">
       <body>
-        {children}
+        <UserProvider>
+          {children}
+        </UserProvider>
       </body>
     </html>
   );
