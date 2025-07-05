@@ -19,7 +19,7 @@ export default function Login() {
         // Redireciona para o feed da matrícula (ou outro local)
         window.location.href = `/feed`;
     } else {
-        alert("Matrícula ou senha inválida.");
+        alert("Matrícula ou CPF inválida.");
     }
     }
 

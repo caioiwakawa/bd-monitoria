@@ -44,13 +44,9 @@ export default function CadastroDiscente() {
     return (
         <main>
             <LoginHeader/>
-            <div className="relative mx-auto top-20 w-132 h-380 bg-unblightblue border-2 border-unbblue rounded-4xl">
+            <div className="relative mx-auto top-20 w-132 h-420 bg-unblightblue border-2 border-unbblue rounded-4xl">
                 <h1 className="text-center my-7 text-4xl font-medium w-full">Cadastro</h1>
                 <form onSubmit={handleSubmit}>
-                    <FormBox name="nome" placeholder="Nome" />
-                    <FormBox name="matricula" placeholder="Matrícula" />
-                    <FormBox name="email" placeholder="E-mail" />
-                    <FormBox name="cpf" placeholder="CPF" />
                     <div className="relative w-92 h-20 mx-20 my-10">
                         <label className="text-xl text-white">Foto de Perfil:</label>
                         <input 
@@ -61,6 +57,10 @@ export default function CadastroDiscente() {
                             required
                         />
                     </div>
+                    <FormBox name="nome" placeholder="Nome" />
+                    <FormBox name="matricula" placeholder="Matrícula" />
+                    <FormBox name="email" placeholder="E-mail" />
+                    <FormBox name="cpf" placeholder="CPF" />
                     <FormBox name="semestre" placeholder="Semestre de Ingresso" />
                     <FormBox name="ira" placeholder="IRA" />
                     <FormBox name="status" placeholder="Status" />
@@ -84,7 +84,7 @@ export default function CadastroDiscente() {
                     <Link href="/"><h1 className="text-center text-white my-5">Já tem uma conta? Faça o login</h1></Link>
                 </form>
             </div>
-            <div className="absolute top-440 w-screen h-24 bg-unbblue"></div>
+            <div className="absolute top-470 w-screen h-24 bg-unbblue"></div>
         </main>
     )
 }

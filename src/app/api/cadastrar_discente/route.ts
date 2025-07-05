@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
   const telefones = form.getAll('telefones[]') as string[]
 
   try {
-    const curso = await prisma.curso.findFirst({
+    const curso = await prisma.tb_curso.findFirst({
       where: { nome_curso: nomeCurso },
     });
 
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ erro: "Curso não encontrado" }, { status: 400 });
     }
 
-    const aluno = await prisma.aluno.create({
+    const aluno = await prisma.tb_aluno.create({
       data: {
         matricula_aluno,
         nome_aluno,
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
         semestre_ingresso_aluno,
         ira,
         status_aluno,
-        codigo_curso: curso.codigo_curso,
+        tb_curso_codigo_curso: curso.codigo_curso,
         foto_perfil: fotoBuffer,
       },
     });
@@ -50,10 +50,10 @@ export async function POST(req: NextRequest) {
   for (const numero of telefones) {
     if (numero.trim() === '') continue;
 
-    await prisma.aluno_telefones.create({
+    await prisma.tb_aluno_telefones.create({
       data: {
         num_telefone_aluno: numero,
-        matricula_aluno: matricula_aluno,
+        tb_aluno_matricula_aluno: matricula_aluno,
       },
     });
   }

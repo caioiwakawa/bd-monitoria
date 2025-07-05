@@ -10,25 +10,25 @@ export async function GET(
   const matricula = parseInt(params.matricula);
 
   try {
-    const aluno = await prisma.tb_aluno.findUnique({
-      where: { matricula_aluno: matricula },
-      select: { foto_perfil: true },
+    const professor = await prisma.tb_professor.findUnique({
+      where: { matricula_professor: matricula },
+      select: { foto_perfil_professor: true },
     });
 
-    if (!aluno || !aluno.foto_perfil) {
+    if (!professor || !professor.foto_perfil_professor) {
       return new NextResponse("Imagem não encontrada", { status: 404 });
     }
 
-    return new NextResponse(new Blob([Buffer.from(aluno.foto_perfil)]), {
+    return new NextResponse(new Blob([Buffer.from(professor.foto_perfil_professor)]), {
       status: 200,
       headers: {
-        "Content-Type": "image/svg+xml", // SVG aqui!
-        "Content-Length": aluno.foto_perfil.length.toString(),
+        "Content-Type": "image/svg+xml", // ou image/png, image/svg+xml, etc.
+        "Content-Length": professor.foto_perfil_professor.length.toString(),
         "Cache-Control": "public, max-age=3600",
       },
     });
   } catch (error) {
-    console.error("Erro ao buscar foto:", error);
+    console.error("Erro ao buscar foto do professor:", error);
     return new NextResponse("Erro interno", { status: 500 });
   }
 }

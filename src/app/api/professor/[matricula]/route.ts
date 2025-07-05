@@ -11,28 +11,25 @@ export async function GET(
 
   try {
     // Busca todos os dados do aluno EXCETO foto_perfil
-    const aluno = await prisma.tb_aluno.findUnique({
-      where: { matricula_aluno: matricula },
+    const professor = await prisma.tb_professor.findUnique({
+      where: { matricula_professor: matricula },
       select: {
-        matricula_aluno: true,
-        nome_aluno: true,
-        email_aluno: true,
-        cpf_aluno: true,
-        semestre_ingresso_aluno: true,
-        ira: true,
-        status_aluno: true,
-        tb_curso_codigo_curso: true,
+        matricula_professor: true,
+        nome_professor: true,
+        email_professor: true,
+        cpf_professor: true,
+        data_contratacao_professor: true,
         // Não incluir foto_perfil aqui!
       },
     });
 
-    if (!aluno) {
-      return new NextResponse("Aluno não encontrado", { status: 404 });
+    if (!professor) {
+      return new NextResponse("Professor não encontrado", { status: 404 });
     }
 
-    return NextResponse.json(aluno);
+    return NextResponse.json(professor);
   } catch (error) {
-    console.error("Erro ao buscar aluno:", error);
+    console.error("Erro ao buscar professor:", error);
     return new NextResponse("Erro interno", { status: 500 });
   }
 }

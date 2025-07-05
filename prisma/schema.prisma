@@ -7,129 +7,184 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model aluno {
-  matricula_aluno         Int                @id
-  cpf_aluno               String             @unique @db.VarChar(11)
-  nome_aluno              String             @db.VarChar(50)
-  email_aluno             String             @unique @db.VarChar(50)
-  semestre_ingresso_aluno String             @db.VarChar(10)
-  ira                     Float
-  status_aluno            String             @db.VarChar(15)
-  codigo_curso            Int
+model tb_aluno {
+  matricula_aluno         Int                   @id
+  cpf_aluno               String                @unique @db.VarChar(11)
+  nome_aluno              String                @db.VarChar(50)
+  email_aluno             String                @unique @db.VarChar(50)
+  semestre_ingresso_aluno String                @db.VarChar(10)
+  ira                     Float                 @db.Real
+  status_aluno            String                @db.VarChar(15)
+  tb_curso_codigo_curso   Int
   foto_perfil             Bytes?
-  curso                   curso              @relation(fields: [codigo_curso], references: [codigo_curso], onDelete: NoAction, onUpdate: NoAction)
-  aluno_elegivel          aluno_elegivel?
-  aluno_matriculado       aluno_matriculado?
-  aluno_telefones         aluno_telefones[]
+  tb_curso                tb_curso              @relation(fields: [tb_curso_codigo_curso], references: [codigo_curso], onDelete: NoAction, onUpdate: NoAction)
+  tb_aluno_elegivel       tb_aluno_elegivel?
+  tb_aluno_matriculado    tb_aluno_matriculado?
+  tb_aluno_telefones      tb_aluno_telefones[]
 }
 
-model aluno_elegivel {
-  matricula_aluno             Int                           @id
-  aluno                       aluno                         @relation(fields: [matricula_aluno], references: [matricula_aluno], onDelete: NoAction, onUpdate: NoAction)
-  candidaturas_oferta_mon_tut candidaturas_oferta_mon_tut[]
-  cursou_disciplina           cursou_disciplina[]
+model tb_aluno_elegivel {
+  tb_aluno_matricula_aluno       Int                              @id
+  tb_aluno                       tb_aluno                         @relation(fields: [tb_aluno_matricula_aluno], references: [matricula_aluno], onDelete: NoAction, onUpdate: NoAction)
+  tb_candidaturas_oferta_mon_tut tb_candidaturas_oferta_mon_tut[]
+  tb_cursou_disciplina           tb_cursou_disciplina[]
+  tb_monitoria_tutoria           tb_monitoria_tutoria[]
 }
 
-model aluno_matriculado {
-  matricula_aluno Int   @id
-  aluno           aluno @relation(fields: [matricula_aluno], references: [matricula_aluno], onDelete: NoAction, onUpdate: NoAction)
+model tb_aluno_matriculado {
+  tb_aluno_matricula_aluno     Int                            @id
+  tb_aluno                     tb_aluno                       @relation(fields: [tb_aluno_matricula_aluno], references: [matricula_aluno], onDelete: NoAction, onUpdate: NoAction)
+  tb_avaliacao_mon_tut         tb_avaliacao_mon_tut[]
+  tb_matriculado_em_disciplina tb_matriculado_em_disciplina[]
 }
 
-model aluno_telefones {
-  matricula_aluno    Int
-  num_telefone_aluno String @unique @db.VarChar(25)
-  aluno              aluno  @relation(fields: [matricula_aluno], references: [matricula_aluno], onDelete: NoAction, onUpdate: NoAction)
+model tb_aluno_telefones {
+  tb_aluno_matricula_aluno Int
+  num_telefone_aluno       String   @unique @db.VarChar(25)
+  tb_aluno                 tb_aluno @relation(fields: [tb_aluno_matricula_aluno], references: [matricula_aluno], onDelete: NoAction, onUpdate: NoAction)
 
-  @@id([matricula_aluno, num_telefone_aluno])
+  @@id([tb_aluno_matricula_aluno, num_telefone_aluno])
 }
 
-model candidaturas_oferta_mon_tut {
-  matricula_aluno Int
-  codigo_oferta   Int
-  oferta_mon_tut  oferta_mon_tut @relation(fields: [codigo_oferta], references: [codigo_oferta], onDelete: NoAction, onUpdate: NoAction)
-  aluno_elegivel  aluno_elegivel @relation(fields: [matricula_aluno], references: [matricula_aluno], onDelete: NoAction, onUpdate: NoAction)
+model tb_avaliacao_mon_tut {
+  codigo_oferta_mon_tut         Int
+  matricula_aluno_monitor_tutor Int
+  matricula_aluno_avaliador     Int
+  nota_avaliacao                Int
+  comentario_avaliacao          String               @db.VarChar(200)
+  tb_monitoria_tutoria          tb_monitoria_tutoria @relation(fields: [codigo_oferta_mon_tut, matricula_aluno_monitor_tutor], references: [codigo_oferta_mon_tut, matricula_aluno_monitor_tutor], onDelete: NoAction, onUpdate: NoAction)
+  tb_aluno_matriculado          tb_aluno_matriculado @relation(fields: [matricula_aluno_avaliador], references: [tb_aluno_matricula_aluno], onDelete: NoAction, onUpdate: NoAction)
 
-  @@id([matricula_aluno, codigo_oferta])
+  @@id([codigo_oferta_mon_tut, matricula_aluno_monitor_tutor, matricula_aluno_avaliador])
 }
 
-model curso {
-  codigo_curso          Int          @id
-  codigo_departamento   Int
-  matricula_coordenador Int
-  nome_curso            String       @db.VarChar(50)
-  nivel_curso           String       @db.VarChar(20)
-  turno_curso           String       @db.VarChar(20)
-  aluno                 aluno[]
-  departamento          departamento @relation(fields: [codigo_departamento], references: [codigo_departamento], onDelete: NoAction, onUpdate: NoAction)
-  professor             professor    @relation(fields: [matricula_coordenador], references: [matricula_professor], onDelete: NoAction, onUpdate: NoAction)
+model tb_candidaturas_oferta_mon_tut {
+  tb_aluno_elegivel_tb_aluno_matricula_aluno Int
+  tb_oferta_mon_tut_codigo_oferta_mon_tut    Int
+  tb_aluno_elegivel                          tb_aluno_elegivel @relation(fields: [tb_aluno_elegivel_tb_aluno_matricula_aluno], references: [tb_aluno_matricula_aluno], onDelete: NoAction, onUpdate: NoAction, map: "tb_candidaturas_oferta_mon_tu_tb_aluno_elegivel_tb_aluno_m_fkey")
+  tb_oferta_mon_tut                          tb_oferta_mon_tut @relation(fields: [tb_oferta_mon_tut_codigo_oferta_mon_tut], references: [codigo_oferta_mon_tut], onDelete: NoAction, onUpdate: NoAction, map: "tb_candidaturas_oferta_mon_tu_tb_oferta_mon_tut_codigo_ofe_fkey")
+
+  @@id([tb_aluno_elegivel_tb_aluno_matricula_aluno, tb_oferta_mon_tut_codigo_oferta_mon_tut])
 }
 
-model cursou_disciplina {
-  codigo_disciplina  String         @db.VarChar(20)
-  matricula_aluno    Int
-  semestre_aprovacao String         @db.VarChar(45)
-  disciplina         disciplina     @relation(fields: [codigo_disciplina], references: [codigo_disciplina], onDelete: NoAction, onUpdate: NoAction)
-  aluno_elegivel     aluno_elegivel @relation(fields: [matricula_aluno], references: [matricula_aluno], onDelete: NoAction, onUpdate: NoAction)
+model tb_curso {
+  codigo_curso                        Int             @unique
+  tb_departamento_codigo_departamento Int
+  tb_professor_matricula_coordenador  Int
+  nome_curso                          String          @db.VarChar(50)
+  nivel_curso                         String          @db.VarChar(20)
+  turno_curso                         String          @db.VarChar(20)
+  tb_aluno                            tb_aluno[]
+  tb_departamento                     tb_departamento @relation(fields: [tb_departamento_codigo_departamento], references: [codigo_departamento], onDelete: NoAction, onUpdate: NoAction)
+  tb_professor                        tb_professor    @relation(fields: [tb_professor_matricula_coordenador], references: [matricula_professor], onDelete: NoAction, onUpdate: NoAction)
 
-  @@id([codigo_disciplina, matricula_aluno])
+  @@id([codigo_curso, tb_departamento_codigo_departamento])
 }
 
-model departamento {
-  codigo_departamento Int          @id
-  nome_departamento   String       @db.VarChar(50)
-  curso               curso[]
-  disciplina          disciplina[]
+model tb_cursou_disciplina {
+  tb_disciplina_codigo_disciplina            String            @db.VarChar(20)
+  tb_aluno_elegivel_tb_aluno_matricula_aluno Int
+  semestre_aprovacao                         String            @db.VarChar(45)
+  tb_aluno_elegivel                          tb_aluno_elegivel @relation(fields: [tb_aluno_elegivel_tb_aluno_matricula_aluno], references: [tb_aluno_matricula_aluno], onDelete: NoAction, onUpdate: NoAction)
+  tb_disciplina                              tb_disciplina     @relation(fields: [tb_disciplina_codigo_disciplina], references: [codigo_disciplina], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([tb_disciplina_codigo_disciplina, tb_aluno_elegivel_tb_aluno_matricula_aluno])
 }
 
-model disciplina {
-  codigo_disciplina   String              @unique @db.VarChar(20)
-  codigo_departamento Int
-  nome_disciplina     String              @db.VarChar(50)
-  cursou_disciplina   cursou_disciplina[]
-  departamento        departamento        @relation(fields: [codigo_departamento], references: [codigo_departamento], onDelete: NoAction, onUpdate: NoAction)
-  turma               turma[]
+model tb_departamento {
+  codigo_departamento Int             @id
+  nome_departamento   String          @db.VarChar(50)
+  tb_curso            tb_curso[]
+  tb_disciplina       tb_disciplina[]
+}
+
+model tb_disciplina {
+  codigo_disciplina    String                 @unique @db.VarChar(20)
+  codigo_departamento  Int
+  nome_disciplina      String                 @db.VarChar(50)
+  tb_cursou_disciplina tb_cursou_disciplina[]
+  tb_departamento      tb_departamento        @relation(fields: [codigo_departamento], references: [codigo_departamento], onDelete: NoAction, onUpdate: NoAction)
+  tb_turma             tb_turma[]
 
   @@id([codigo_disciplina, codigo_departamento])
 }
 
-model oferta_mon_tut {
-  codigo_oferta                   Int                           @id
+model tb_matriculado_em_disciplina {
+  tb_aluno_matricula         Int
+  tb_turma_codigo_disciplina String               @db.VarChar(20)
+  tb_turma_numero_turma      Int
+  tb_turma_semestre_turma    String               @db.VarChar(20)
+  tb_aluno_matriculado       tb_aluno_matriculado @relation(fields: [tb_aluno_matricula], references: [tb_aluno_matricula_aluno], onDelete: NoAction, onUpdate: NoAction)
+  tb_turma                   tb_turma             @relation(fields: [tb_turma_codigo_disciplina, tb_turma_numero_turma, tb_turma_semestre_turma], references: [tb_disciplina_codigo_disciplina, numero_turma, semestre_turma], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([tb_aluno_matricula, tb_turma_codigo_disciplina, tb_turma_numero_turma, tb_turma_semestre_turma])
+}
+
+model tb_monitoria_tutoria {
+  codigo_oferta_mon_tut         Int
+  matricula_aluno_monitor_tutor Int
+  horario_mon_tut               String                 @db.VarChar(45)
+  tb_avaliacao_mon_tut          tb_avaliacao_mon_tut[]
+  tb_oferta_mon_tut             tb_oferta_mon_tut      @relation(fields: [codigo_oferta_mon_tut], references: [codigo_oferta_mon_tut], onDelete: NoAction, onUpdate: NoAction)
+  tb_aluno_elegivel             tb_aluno_elegivel      @relation(fields: [matricula_aluno_monitor_tutor], references: [tb_aluno_matricula_aluno], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([codigo_oferta_mon_tut, matricula_aluno_monitor_tutor])
+}
+
+model tb_oferta_mon_tut {
+  codigo_oferta_mon_tut           Int                              @id
   matricula_professor_responsavel Int
-  tipo_oferta                     String                        @db.VarChar(20)
-  desc_oferta                     String                        @db.VarChar(200)
-  carga_horaria                   Int
-  bolsa                           Float
-  candidaturas_oferta_mon_tut     candidaturas_oferta_mon_tut[]
-  professor                       professor                     @relation(fields: [matricula_professor_responsavel], references: [matricula_professor], onDelete: NoAction, onUpdate: NoAction)
+  tipo_oferta                     String                           @db.VarChar(20)
+  desc_oferta                     String                           @db.VarChar(200)
+  carga_horaria_oferta            Int
+  bolsa_oferta                    Float                            @db.Real
+  tb_candidaturas_oferta_mon_tut  tb_candidaturas_oferta_mon_tut[]
+  tb_monitoria_tutoria            tb_monitoria_tutoria[]
+  tb_professor                    tb_professor                     @relation(fields: [matricula_professor_responsavel], references: [matricula_professor], onDelete: NoAction, onUpdate: NoAction)
+  tb_ofertas_e_turmas             tb_ofertas_e_turmas[]
 }
 
-model professor {
-  matricula_professor        Int                   @id
-  cpf_professor              String                @unique @db.VarChar(11)
-  nome_professor             String                @db.VarChar(50)
-  email_professor            String                @unique @db.VarChar(50)
-  data_contratacao_professor DateTime              @db.Date
-  curso                      curso[]
-  oferta_mon_tut             oferta_mon_tut[]
-  professor_telefones        professor_telefones[]
-  turma                      turma[]
+model tb_ofertas_e_turmas {
+  codigo_oferta_mon_tut Int
+  codigo_disciplina     String            @db.VarChar(20)
+  numero_turma          Int
+  semestre_turma        String            @db.VarChar(20)
+  tb_turma              tb_turma          @relation(fields: [codigo_disciplina, numero_turma, semestre_turma], references: [tb_disciplina_codigo_disciplina, numero_turma, semestre_turma], onDelete: NoAction, onUpdate: NoAction)
+  tb_oferta_mon_tut     tb_oferta_mon_tut @relation(fields: [codigo_oferta_mon_tut], references: [codigo_oferta_mon_tut], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([codigo_oferta_mon_tut, codigo_disciplina, numero_turma, semestre_turma])
 }
 
-model professor_telefones {
-  matricula_professor    Int
-  num_telefone_professor String    @unique @db.VarChar(25)
-  professor              professor @relation(fields: [matricula_professor], references: [matricula_professor], onDelete: NoAction, onUpdate: NoAction)
-
-  @@id([matricula_professor, num_telefone_professor])
+model tb_professor {
+  matricula_professor        Int                      @id
+  cpf_professor              String                   @unique @db.VarChar(11)
+  nome_professor             String                   @db.VarChar(50)
+  email_professor            String                   @unique @db.VarChar(50)
+  data_contratacao_professor DateTime                 @db.Date
+  foto_perfil_professor      Bytes?
+  tb_curso                   tb_curso[]
+  tb_oferta_mon_tut          tb_oferta_mon_tut[]
+  tb_professor_telefones     tb_professor_telefones[]
+  tb_turma                   tb_turma[]
 }
 
-model turma {
-  codigo_disciplina   String     @db.VarChar(20)
-  numero_turma        Int
-  semestre_turma      String     @db.VarChar(20)
-  matricula_professor Int
-  disciplina          disciplina @relation(fields: [codigo_disciplina], references: [codigo_disciplina], onDelete: NoAction, onUpdate: NoAction)
-  professor           professor  @relation(fields: [matricula_professor], references: [matricula_professor], onDelete: NoAction, onUpdate: NoAction)
+model tb_professor_telefones {
+  tb_professor_matricula_professor Int
+  num_telefone_professor           String       @unique @db.VarChar(25)
+  tb_professor                     tb_professor @relation(fields: [tb_professor_matricula_professor], references: [matricula_professor], onDelete: NoAction, onUpdate: NoAction)
 
-  @@id([codigo_disciplina, numero_turma, semestre_turma])
+  @@id([tb_professor_matricula_professor, num_telefone_professor])
+}
+
+model tb_turma {
+  tb_disciplina_codigo_disciplina  String                         @db.VarChar(20)
+  numero_turma                     Int
+  semestre_turma                   String                         @db.VarChar(20)
+  tb_professor_matricula_professor Int
+  tb_matriculado_em_disciplina     tb_matriculado_em_disciplina[]
+  tb_ofertas_e_turmas              tb_ofertas_e_turmas[]
+  tb_disciplina                    tb_disciplina                  @relation(fields: [tb_disciplina_codigo_disciplina], references: [codigo_disciplina], onDelete: NoAction, onUpdate: NoAction)
+  tb_professor                     tb_professor                   @relation(fields: [tb_professor_matricula_professor], references: [matricula_professor], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([tb_disciplina_codigo_disciplina, numero_turma, semestre_turma])
 }
