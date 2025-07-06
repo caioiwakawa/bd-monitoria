@@ -4,7 +4,6 @@ import FormBox from "@/components/form_box";
 import Link from "next/link";
 
 import { useState } from "react";
-import { useRouter } from "next/router";
 
 // Fora do componente
 function TelefoneInput({ index }: { index: number }) {
@@ -12,8 +11,6 @@ function TelefoneInput({ index }: { index: number }) {
 }
 
 export default function CadastroDiscente() {
-  const router = useRouter();
-
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -26,7 +23,7 @@ export default function CadastroDiscente() {
 
     if (res.ok) {
       alert("Aluno cadastrado com sucesso!");
-      router.push("/");
+      window.location.href = "/";
     } else {
       alert("Erro ao cadastrar aluno");
     }

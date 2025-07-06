@@ -9,6 +9,7 @@ import SearchBar from "@/components/search_bar";
 import FormBox from "@/components/form_box";
 import { useUser } from "@/context/UserContext";
 import TurmaSelect from "@/components/turma_select";
+import ChatBox from "@/components/chat_box";
 
 type Monitoria = {
   codigoOferta: number;
@@ -324,10 +325,9 @@ export default function Feed() {
       {modalComentarioAberto && (
         <div className="modal-backdrop">
           <div className="modal-content">
-            <h2>
-              Comentários da oferta: {modalComentarioAberto.nomeDisciplina}
-            </h2>
-            {/* Aqui você coloca os comentários, ou formulário para comentar */}
+            {/* COMECA AQUI O CHAT */}
+            <ChatBox nomeDisciplina={modalComentarioAberto.nomeDisciplina} />
+            {/* TERMINA AQUI O CHAT */}
             <button onClick={() => setModalComentarioAberto(null)}>
               Fechar
             </button>
