@@ -58,6 +58,19 @@ export async function POST(req: NextRequest) {
     });
   }
 
+
+
+  const jaElegivel = await prisma.tb_aluno_elegivel.findUnique({
+    where: { tb_aluno_matricula_aluno: matricula_aluno }
+  });
+
+  if (!jaElegivel) {
+    await prisma.tb_aluno_elegivel.create({
+      data: { tb_aluno_matricula_aluno: matricula_aluno }
+    });
+  }
+
+
     return NextResponse.json({ ok: true, aluno });
   } catch (error) {
     console.error("Erro ao cadastrar aluno:", error);

@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -132,7 +133,7 @@ model tb_monitoria_tutoria {
 }
 
 model tb_oferta_mon_tut {
-  codigo_oferta_mon_tut           Int                              @id
+  codigo_oferta_mon_tut           Int                              @id @default(autoincrement())
   matricula_professor_responsavel Int
   tipo_oferta                     String                           @db.VarChar(20)
   desc_oferta                     String                           @db.VarChar(200)
@@ -160,8 +161,8 @@ model tb_professor {
   cpf_professor              String                   @unique @db.VarChar(11)
   nome_professor             String                   @db.VarChar(50)
   email_professor            String                   @unique @db.VarChar(50)
+  foto_perfil                Bytes?
   data_contratacao_professor DateTime                 @db.Date
-  foto_perfil_professor      Bytes?
   tb_curso                   tb_curso[]
   tb_oferta_mon_tut          tb_oferta_mon_tut[]
   tb_professor_telefones     tb_professor_telefones[]

@@ -46,7 +46,7 @@ export default function PerfilProfessor({ params }: PerfilProfessorProps) {
 
       <div style={{ marginBottom: 20 }}>
         <img
-          src={`/api/foto_professor/${matricula}`}
+          src={`/api/foto/${matricula}`}
           alt="Foto do professor"
           width={160}
           height={160}
