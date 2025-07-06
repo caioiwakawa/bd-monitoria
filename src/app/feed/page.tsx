@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import Link from "next/link";
 import FeedBox from "@/components/feed_box";
 import FeedFlexBox from "@/components/feed_flexbox";
@@ -28,6 +28,14 @@ type Turma = {
   semestre_turma: string;
   professor: string;
   matricula_professor: number;
+};
+
+export type ModalComentario = {
+  codigoOfertaMonTut: number;         // código da oferta monitoria/tutoria
+  matriculaAlunoMonitorTutor: number; // matrícula do aluno monitor/tutor avaliado
+  matriculaAlunoAvaliador: number;    // matrícula do aluno que fez a avaliação
+  notaAvaliacao: number;               // nota dada na avaliação (ex: 1 a 5)
+  comentarioAvaliacao: string;         // comentário textual
 };
 
 export default function Feed() {
@@ -168,6 +176,42 @@ export default function Feed() {
     }
   }
 
+  //-----------------------------------------Modal inscrição monitoria---------
+
+    const [matriculaForm, setMatriculaForm] = useState('')
+    const [mensagem, setMensagem] = useState<string | null>(null)
+    const [carregando, setCarregando] = useState(false)
+
+    const handleInscricao = async () => {
+    setMensagem(null)
+    setCarregando(true)
+
+    try {
+      const response = await fetch('/api/inscrever_monitoria', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          matricula_aluno: parseInt(matriculaForm, 10),
+          codigo_oferta_mon_tut: modalInscricaoAberto?.codigoOferta,
+        }),
+      })
+
+    const data = await response.json()
+
+    if (response.ok) {
+      setMensagem('Inscrição realizada com sucesso!')
+    } else {
+      setMensagem(data.error || 'Erro ao se inscrever.')
+    }
+  } catch (err) {
+    setMensagem('Erro de conexão com o servidor.')
+  }
+
+  setCarregando(false)
+}
+
   return (
     <main>
       <Header />
@@ -185,7 +229,7 @@ export default function Feed() {
               Criar nova oportunidade de monitoria/tutoria
             </button>
             <button className="h-15 m-10 px-1 mb-5 bg-unbblue rounded-3xl border-1 border-black text-xl text-white">
-              Criar nova oportunidade de monitoria/tutoria
+              Editar oportunidade de monitoria/tutoria
             </button>
           </div>
 
@@ -309,31 +353,42 @@ export default function Feed() {
       {/* Modal inscrição */}
       {modalInscricaoAberto && (
         <div className="modal-backdrop">
-          <div className="modal-content">
-            <h2>Inscrição na oferta: {modalInscricaoAberto.nomeDisciplina}</h2>
-            <FormBox name="nome" placeholder="Nome" />
-            <FormBox name="matricula" placeholder="Matrícula" />
-            <FormBox name="email" placeholder="E-mail" />
-            <button onClick={() => setModalInscricaoAberto(null)}>
-              Fechar
-            </button>
-          </div>
-        </div>
+        <div className="modal-content">
+        <h2>Inscrição na oferta: {modalInscricaoAberto.nomeDisciplina}</h2>
+
+        <FormBox name="nome" placeholder="Nome" />
+        <FormBox name="matricula" placeholder="Matrícula" onChange={(e: { target: { value: SetStateAction<string>; }; }) => setMatriculaForm(e.target.value)} />
+
+        <FormBox name="email" placeholder="E-mail" />
+
+        {mensagem && <p>{mensagem}</p>}
+
+        <button onClick={handleInscricao} disabled={carregando}>
+          {carregando ? 'Inscrevendo...' : 'Confirmar Inscrição'}
+        </button>
+
+        <button onClick={() => setModalInscricaoAberto(null)}>
+          Fechar
+        </button>
+      </div>
+      </div>
       )}
 
+
       {/* Modal comentários */}
-      {modalComentarioAberto && (
-        <div className="modal-backdrop">
-          <div className="modal-content">
-            {/* COMECA AQUI O CHAT */}
-            <ChatBox nomeDisciplina={modalComentarioAberto.nomeDisciplina} />
-            {/* TERMINA AQUI O CHAT */}
-            <button onClick={() => setModalComentarioAberto(null)}>
-              Fechar
-            </button>
-          </div>
-        </div>
-      )}
+{modalComentarioAberto && (
+  <div className="modal-backdrop">
+    <div className="modal-content">
+      <ChatBox
+        nomeDisciplina={modalComentarioAberto.nomeDisciplina}
+        codigoOferta={modalComentarioAberto.codigoOferta}
+        matriculaAvaliador={matricula!} // vindo de outro lugar (aluno logado)
+      />
+      <button onClick={() => setModalComentarioAberto(null)}>Fechar</button>
+    </div>
+  </div>
+)}
+
     </main>
   );
 }
