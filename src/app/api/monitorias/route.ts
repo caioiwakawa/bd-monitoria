@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   const ofertas = await prisma.tb_oferta_mon_tut.findMany({
@@ -16,7 +16,7 @@ export async function GET() {
     },
   });
 
-  const resultado = ofertas.map((oferta: { tb_ofertas_e_turmas: { tb_turma: any; }[]; codigo_oferta_mon_tut: any; tipo_oferta: any; desc_oferta: any; carga_horaria_oferta: any; bolsa_oferta: any; }) => {
+  const resultado = ofertas.map((oferta) => {
     const turma = oferta.tb_ofertas_e_turmas[0]?.tb_turma;
     const disciplina = turma?.tb_disciplina;
 
@@ -26,9 +26,10 @@ export async function GET() {
       descricao: oferta.desc_oferta,
       cargaHoraria: oferta.carga_horaria_oferta,
       bolsa: oferta.bolsa_oferta,
+      matriculaProfessorResponsavel: oferta.matricula_professor_responsavel,
       nomeDisciplina: disciplina
         ? `${disciplina.codigo_disciplina} ${disciplina.codigo_departamento} - ${disciplina.nome_disciplina}`
-        : 'Disciplina não encontrada',
+        : "Disciplina não encontrada",
     };
   });
 
