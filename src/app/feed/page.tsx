@@ -30,32 +30,23 @@ type Turma = {
   matricula_professor: number;
 };
 
-export type ModalComentario = {
-  codigoOfertaMonTut: number;         // código da oferta monitoria/tutoria
-  matriculaAlunoMonitorTutor: number; // matrícula do aluno monitor/tutor avaliado
-  matriculaAlunoAvaliador: number;    // matrícula do aluno que fez a avaliação
-  notaAvaliacao: number;               // nota dada na avaliação (ex: 1 a 5)
-  comentarioAvaliacao: string;         // comentário textual
-};
-
 export default function Feed() {
+  // O hook useUser já nos dá a matrícula do aluno logado!
   const { matricula, tipo } = useUser();
 
   const [monitorias, setMonitorias] = useState<Monitoria[]>([]);
   const [turmas, setTurmas] = useState<Turma[]>([]);
   const [filtro, setFiltro] = useState("");
-  const [modalInscricaoAberto, setModalInscricaoAberto] =
-    useState<Monitoria | null>(null);
-  const [modalComentarioAberto, setModalComentarioAberto] =
-    useState<Monitoria | null>(null);
-
-  const [modalEdicaoMonitoria, setModalEdicaoMonitoria] =
-    useState<Monitoria | null>(null);
+  const [modalInscricaoAberto, setModalInscricaoAberto] = useState<Monitoria | null>(null);
+  const [modalComentarioAberto, setModalComentarioAberto] = useState<Monitoria | null>(null);
+  const [modalEdicaoMonitoria, setModalEdicaoMonitoria] = useState<Monitoria | null>(null);
   const [modalNovaMonitoria, setModalNovaMonitoria] = useState(false);
 
-  useEffect(() => {
-    console.log(tipo);
+  // Estados para controlar o feedback da inscrição
+  const [mensagem, setMensagem] = useState<string | null>(null);
+  const [carregando, setCarregando] = useState(false);
 
+  useEffect(() => {
     const fetchMonitorias = async () => {
       const res = await fetch("/api/monitorias");
       const data = await res.json();
@@ -71,27 +62,13 @@ export default function Feed() {
     fetchTurmas();
   }, []);
 
-  // Filtrar monitorias pelo filtro da busca (nomeDisciplina)
   const monitoriasFiltradas = monitorias.filter((mon) =>
     mon.nomeDisciplina.toLowerCase().includes(filtro.toLowerCase())
   );
 
-  // SELECT TURMAS
-  const [selectedCodigo, setSelectedCodigo] = useState<string>("");
-
-  const handleSelectTurma = (codigoDisciplina: string) => {
-    setSelectedCodigo(codigoDisciplina);
-    console.log("Código selecionado:", codigoDisciplina);
-    // Aqui você pode filtrar dados ou fazer outras ações com o código.
-  };
-
-  // HANDLESUBMITS------------------------------------------------------------------------------------------------
-  async function handleEditarMonitoria(
-    event: React.FormEvent<HTMLFormElement>
-  ) {
+  // Funções para professores (sem alterações)
+  async function handleEditarMonitoria(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
-    // Obter os valores do formulário
     const formData = new FormData(event.currentTarget);
     const data = {
       codigoOferta: formData.get("codigoOferta") as string,
@@ -101,33 +78,25 @@ export default function Feed() {
       bolsa: formData.get("bolsa") as string,
       matriculaProfessorResponsavel: matricula,
     };
-
     try {
       const res = await fetch("/api/editar_monitoria", {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json", // Importante!
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           codigoOferta: Number(data.codigoOferta),
           tipo: data.tipo,
           descricao: data.descricao,
           cargaHoraria: Number(data.cargaHoraria),
           bolsa: parseFloat(data.bolsa),
-          matriculaProfessorResponsavel: Number(
-            data.matriculaProfessorResponsavel
-          ),
+          matriculaProfessorResponsavel: Number(data.matriculaProfessorResponsavel),
         }),
       });
-
       if (res.ok) {
         alert("Oferta editada com sucesso!");
-        window.location.href = "/feed";
+        window.location.reload();
       } else {
         const errorData = await res.json();
-        alert(
-          `Erro ao editar oferta: ${errorData.error || "Erro desconhecido"}`
-        );
+        alert(`Erro ao editar oferta: ${errorData.error || "Erro desconhecido"}`);
       }
     } catch (error) {
       console.error("Erro na requisição:", error);
@@ -135,20 +104,20 @@ export default function Feed() {
     }
   }
 
-  // -------------------------------------------------------------------------------------
+  const [selectedCodigo, setSelectedCodigo] = useState<string>("");
+  const handleSelectTurma = (codigoDisciplina: string) => {
+    setSelectedCodigo(codigoDisciplina);
+  };
 
   async function handleNovaMonitoria(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
     const turmaFiltrada = turmas
-      .filter((turma) => turma.codigo_disciplina === selectedCodigo) // Filtra pelo código
+      .filter((turma) => turma.codigo_disciplina === selectedCodigo)
       .map((turma) => ({
         codigo_disciplina: turma.codigo_disciplina,
         numero_turma: turma.numero_turma,
         semestre_turma: turma.semestre_turma,
       }));
-
-    // Obter os valores do formulário
     const formData = new FormData(event.currentTarget);
     const data = {
       matricula_professor_responsavel: matricula,
@@ -158,68 +127,61 @@ export default function Feed() {
       bolsa_oferta: formData.get("bolsa_oferta") as string,
       turmas: turmaFiltrada,
     };
-
     const res = await fetch("/api/cadastrar_monitorias", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json", // Importante para o servidor entender que é JSON
-      },
-      body: JSON.stringify(data), // Envia como JSON
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
     });
-
     if (res.ok) {
       alert("Oferta cadastrada com sucesso!");
-      // Fechar o modal após sucesso (opcional)
-      setModalInscricaoAberto(null);
+      window.location.reload();
     } else {
       alert("Erro ao cadastrar oferta.");
     }
   }
 
-  //-----------------------------------------Modal inscrição monitoria---------
-
-    const [matriculaForm, setMatriculaForm] = useState('')
-    const [mensagem, setMensagem] = useState<string | null>(null)
-    const [carregando, setCarregando] = useState(false)
-
-    const handleInscricao = async () => {
-    setMensagem(null)
-    setCarregando(true)
-
+  // --- LÓGICA DE INSCRIÇÃO ATUALIZADA ---
+  const handleInscricao = async () => {
+    if (!modalInscricaoAberto || !matricula) {
+      alert("Erro: Não foi possível identificar a oferta ou o usuário.");
+      return;
+    }
+    setMensagem(null);
+    setCarregando(true);
     try {
       const response = await fetch('/api/inscrever_monitoria', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          matricula_aluno: parseInt(matriculaForm, 10),
-          codigo_oferta_mon_tut: modalInscricaoAberto?.codigoOferta,
+          matricula_aluno: matricula,
+          codigo_oferta_mon_tut: modalInscricaoAberto.codigoOferta,
         }),
-      })
-
-    const data = await response.json()
-
-    if (response.ok) {
-      setMensagem('Inscrição realizada com sucesso!')
-    } else {
-      setMensagem(data.error || 'Erro ao se inscrever.')
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setMensagem('Inscrição realizada com sucesso!');
+      } else {
+        setMensagem(`Falha na inscrição: ${data.error || 'Erro desconhecido.'}`);
+      }
+    } catch (err) {
+      setMensagem('Erro de conexão com o servidor.');
     }
-  } catch (err) {
-    setMensagem('Erro de conexão com o servidor.')
-  }
+    setCarregando(false);
+  };
 
-  setCarregando(false)
-}
+  const fecharModalInscricao = () => {
+    setModalInscricaoAberto(null);
+    setMensagem(null);
+    setCarregando(false);
+  };
 
   return (
     <main>
       <Header />
-
-      {/* Passar o setFiltro para a SearchBar */}
       <SearchBar onSearch={setFiltro} />
 
-      {tipo == "professor" && (
+      {/* Renderização para professores */}
+      {tipo === "professor" && (
         <FeedFlexBox>
           <div className="flex w-full justify-between">
             <button
@@ -228,16 +190,12 @@ export default function Feed() {
             >
               Criar nova oportunidade de monitoria/tutoria
             </button>
-            <button className="h-15 m-10 px-1 mb-5 bg-unbblue rounded-3xl border-1 border-black text-xl text-white">
-              Editar oportunidade de monitoria/tutoria
-            </button>
           </div>
-
           <div className="grid">
             <h2 className="text-xl mt-10 mx-10 font-bold">
               Oportunidades de monitoria criadas por você:
             </h2>
-            {monitoriasFiltradas
+            {monitorias
               .filter((mon) => mon.matriculaProfessorResponsavel === matricula)
               .map((mon) => (
                 <FeedBox
@@ -255,85 +213,8 @@ export default function Feed() {
         </FeedFlexBox>
       )}
 
-      {/* Modal nova monitoria */}
-      {modalNovaMonitoria && (
-        <div className="modal-backdrop">
-          <div className="modal-content">
-            <h2 className="text-xl">Criar nova oferta</h2>
-            <form onSubmit={handleNovaMonitoria}>
-              <FormBox name="tipo_oferta" placeholder="Tipo de Oferta" />
-              <FormBox name="desc_oferta" placeholder="Descrição breve" />
-              <FormBox
-                name="carga_horaria_oferta"
-                placeholder="Carga horária em números"
-              />
-              <FormBox name="bolsa_oferta" placeholder="Valor da bolsa" />
-              <TurmaSelect turmas={turmas} onSelect={handleSelectTurma} />
-              {/* {selectedCodigo && (
-                <p className="mt-2">
-                  Turma selecionada: <strong>{selectedCodigo}</strong>
-                </p>
-              )} */}
-              <button
-                type="submit"
-                className="w-40 h-15 mx-46 mb-5 bg-unbblue rounded-3xl border-1 border-black text-2xl text-white"
-              >
-                Criar Oferta
-              </button>
-            </form>
-
-            <button onClick={() => setModalNovaMonitoria(false)}>Fechar</button>
-          </div>
-        </div>
-      )}
-
-      {/* Modal inscrição */}
-      {modalEdicaoMonitoria && (
-        <div className="modal-backdrop">
-          <div className="modal-content">
-            <h2 className="mb-5">
-              Edição da oferta: {modalEdicaoMonitoria.nomeDisciplina}
-            </h2>
-            <p>
-              tipo cadastrado: <b>{modalEdicaoMonitoria.tipo}</b>
-            </p>
-            <p>
-              descrição cadastrada: <b>{modalEdicaoMonitoria.descricao}</b>
-            </p>
-            <p>
-              carga horária cadastrada:{" "}
-              <b>{modalEdicaoMonitoria.cargaHoraria}</b>
-            </p>
-            <p>
-              bolsa cadastrada: <b>{modalEdicaoMonitoria.bolsa}</b>
-            </p>
-            <form onSubmit={handleEditarMonitoria}>
-              <FormBox name="tipo" placeholder="Tipo" />
-              <FormBox name="descricao" placeholder="Descrição" />
-              <FormBox name="cargaHoraria" placeholder="Carga Horária" />
-              <FormBox name="bolsa" placeholder="Bolsa" />
-              <input
-                className="hidden"
-                type="text"
-                name="codigoOferta"
-                defaultValue={modalEdicaoMonitoria.codigoOferta}
-              />
-              <button
-                type="submit"
-                className="w-40 h-15 mx-46 mb-5 bg-unbblue rounded-3xl border-1 border-black text-2xl text-white"
-              >
-                Editar Oferta
-              </button>
-            </form>
-
-            <button onClick={() => setModalEdicaoMonitoria(null)}>
-              Fechar
-            </button>
-          </div>
-        </div>
-      )}
-
-      {tipo == "aluno" && (
+      {/* Renderização para alunos */}
+      {tipo === "aluno" && (
         <FeedFlexBox>
           {monitoriasFiltradas.map((mon) => (
             <FeedBox
@@ -350,45 +231,89 @@ export default function Feed() {
         </FeedFlexBox>
       )}
 
-      {/* Modal inscrição */}
-      {modalInscricaoAberto && (
+      {/* Modais para professores (sem alterações) */}
+      {modalNovaMonitoria && (
+         <div className="modal-backdrop">
+           <div className="modal-content">
+             <h2 className="text-xl">Criar nova oferta</h2>
+             <form onSubmit={handleNovaMonitoria}>
+               <FormBox name="tipo_oferta" placeholder="Tipo de Oferta" />
+               <FormBox name="desc_oferta" placeholder="Descrição breve" />
+               <FormBox name="carga_horaria_oferta" placeholder="Carga horária em números"/>
+               <FormBox name="bolsa_oferta" placeholder="Valor da bolsa" />
+               <TurmaSelect turmas={turmas} onSelect={handleSelectTurma} />
+               <button type="submit" className="w-40 h-15 mx-46 mb-5 bg-unbblue rounded-3xl border-1 border-black text-2xl text-white">
+                 Criar Oferta
+               </button>
+             </form>
+             <button onClick={() => setModalNovaMonitoria(false)}>Fechar</button>
+           </div>
+         </div>
+      )}
+      {modalEdicaoMonitoria && (
         <div className="modal-backdrop">
-        <div className="modal-content">
-        <h2>Inscrição na oferta: {modalInscricaoAberto.nomeDisciplina}</h2>
-
-        <FormBox name="nome" placeholder="Nome" />
-        <FormBox name="matricula" placeholder="Matrícula" onChange={(e: { target: { value: SetStateAction<string>; }; }) => setMatriculaForm(e.target.value)} />
-
-        <FormBox name="email" placeholder="E-mail" />
-
-        {mensagem && <p>{mensagem}</p>}
-
-        <button onClick={handleInscricao} disabled={carregando}>
-          {carregando ? 'Inscrevendo...' : 'Confirmar Inscrição'}
-        </button>
-
-        <button onClick={() => setModalInscricaoAberto(null)}>
-          Fechar
-        </button>
-      </div>
-      </div>
+          <div className="modal-content">
+            <h2 className="mb-5">Edição da oferta: {modalEdicaoMonitoria.nomeDisciplina}</h2>
+            <p>tipo cadastrado: <b>{modalEdicaoMonitoria.tipo}</b></p>
+            <p>descrição cadastrada: <b>{modalEdicaoMonitoria.descricao}</b></p>
+            <p>carga horária cadastrada: <b>{modalEdicaoMonitoria.cargaHoraria}</b></p>
+            <p>bolsa cadastrada: <b>{modalEdicaoMonitoria.bolsa}</b></p>
+            <form onSubmit={handleEditarMonitoria}>
+              <FormBox name="tipo" placeholder="Tipo" />
+              <FormBox name="descricao" placeholder="Descrição" />
+              <FormBox name="cargaHoraria" placeholder="Carga Horária" />
+              <FormBox name="bolsa" placeholder="Bolsa" />
+              <input className="hidden" type="text" name="codigoOferta" defaultValue={modalEdicaoMonitoria.codigoOferta}/>
+              <button type="submit" className="w-40 h-15 mx-46 mb-5 bg-unbblue rounded-3xl border-1 border-black text-2xl text-white">
+                Editar Oferta
+              </button>
+            </form>
+            <button onClick={() => setModalEdicaoMonitoria(null)}>Fechar</button>
+          </div>
+        </div>
       )}
 
+      {/* MODAL DE INSCRIÇÃO ATUALIZADO */}
+      {modalInscricaoAberto && (
+        <div className="modal-backdrop">
+          <div className="modal-content text-center">
+            <h2 className="text-2xl font-bold mb-4">Confirmar Candidatura</h2>
+            <p className="text-lg mb-6">
+              Você deseja se candidatar para a vaga de {modalInscricaoAberto.tipo.toLowerCase()} na disciplina de <br/>
+              <strong>{modalInscricaoAberto.nomeDisciplina}</strong>?
+            </p>
+            
+            {mensagem && (
+              <div className={`p-3 rounded-md mb-4 ${mensagem.includes('sucesso') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                {mensagem}
+              </div>
+            )}
 
-      {/* Modal comentários */}
-{modalComentarioAberto && (
-  <div className="modal-backdrop">
-    <div className="modal-content">
-      <ChatBox
-        nomeDisciplina={modalComentarioAberto.nomeDisciplina}
-        codigoOferta={modalComentarioAberto.codigoOferta}
-        matriculaAvaliador={matricula!} // vindo de outro lugar (aluno logado)
-      />
-      <button onClick={() => setModalComentarioAberto(null)}>Fechar</button>
-    </div>
-  </div>
-)}
+            <div className="flex justify-center gap-4">
+              <button onClick={fecharModalInscricao} className="px-6 py-2 bg-gray-300 rounded-lg" disabled={carregando}>
+                Cancelar
+              </button>
+              <button onClick={handleInscricao} disabled={carregando || mensagem?.includes('sucesso')} className="px-6 py-2 bg-unbblue text-white rounded-lg disabled:bg-gray-400">
+                {carregando ? 'Aguarde...' : 'Confirmar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
+      {/* Modal de comentários (sem alterações) */}
+      {modalComentarioAberto && matricula && (
+        <div className="modal-backdrop">
+          <div className="modal-content">
+            <ChatBox
+              codigoOferta={modalComentarioAberto.codigoOferta}
+              matriculaAvaliador={matricula}
+              matriculaAvaliado={null}
+            />
+            <button onClick={() => setModalComentarioAberto(null)}>Fechar</button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

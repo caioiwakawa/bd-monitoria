@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma"; // Importe a sua instância do Prisma
 
 export async function POST(req: NextRequest) {
   const form = await req.formData();
@@ -16,39 +14,45 @@ export async function POST(req: NextRequest) {
 
   const matricula_professor = parseInt(form.get("matricula") as string);
   const nome_professor = form.get("nome") as string;
-  const email_professor = form.get("email") as string; 
+  const email_professor = form.get("email") as string;
   const cpf_professor = form.get("cpf") as string;
   const data_contratacao_str = form.get("data contratacao") as string;
-  const telefones = form.getAll('telefones[]') as string[]
+  const telefones = form.getAll('telefones[]') as string[];
+  
+  // Lógica de data melhorada para evitar erros
   let data_contratacao_professor: Date;
-    if (data_contratacao_str.includes("-")) {
-    const [dia, mes, ano] = data_contratacao_str.split("-").map(Number);
-    data_contratacao_professor = new Date(ano, mes - 1, dia);
-    } else {
-    data_contratacao_professor = new Date(data_contratacao_str); // assume YYYY-MM-DD
-    }
+  if (data_contratacao_str) {
+      data_contratacao_professor = new Date(data_contratacao_str.split('-').reverse().join('-'));
+  } else {
+      data_contratacao_professor = new Date(); // Ou trate como um erro se for obrigatório
+  }
+
 
   try {
     const professor = await prisma.tb_professor.create({
       data: {
         matricula_professor,
         nome_professor,
-        email_professor, 
+        email_professor,
         cpf_professor,
-        data_contratacao_professor, 
-        foto_perfil_professor: fotoBuffer,
+        data_contratacao_professor,
+        // CORREÇÃO: O nome do campo deve corresponder ao schema.prisma
+        foto_perfil: fotoBuffer,
       },
     });
-      for (const numero of telefones) {
-    if (numero.trim() === '') continue;
-
-    await prisma.tb_professor_telefones.create({
-      data: {
-        num_telefone_professor: numero,
-        tb_professor_matricula_professor: matricula_professor,
-      },
-    });
-  }
+    
+    // Inserir telefones se existirem
+    if (telefones && telefones.length > 0) {
+        for (const numero of telefones) {
+            if (numero.trim() === '') continue;
+            await prisma.tb_professor_telefones.create({
+              data: {
+                num_telefone_professor: numero,
+                tb_professor_matricula_professor: matricula_professor,
+              },
+            });
+        }
+    }
 
     return NextResponse.json({ ok: true, professor });
   } catch (error) {
