@@ -59,6 +59,20 @@ export async function PUT(
     const ira = parseFloat(form.get("ira") as string);
     const status_aluno = form.get("status") as string;
     const curso_aluno = form.get("curso") as string;
+    const telefones = form.getAll("telefones[]") as string[]
+
+    let tb_curso_codigo_curso;
+
+    if(curso_aluno) {
+        const curso = await prisma.tb_curso.findFirst({
+            where: { nome_curso: curso_aluno },
+        });
+    
+        if (!curso) {
+            return NextResponse.json({ erro: "Curso não encontrado" }, { status: 400 });
+        }
+        tb_curso_codigo_curso = curso.codigo_curso;
+    }
 
     try {
         await prisma.tb_aluno.update({
@@ -70,8 +84,28 @@ export async function PUT(
             ...(semestre_ingresso_aluno && {semestre_ingresso_aluno}),
             ...(ira && {ira}),
             ...(status_aluno && {status_aluno}),
+            ...(tb_curso_codigo_curso && {tb_curso_codigo_curso})
           }
         })
+
+        for(const item of telefones) {
+          if(item === ""){ continue; }
+          await prisma.tb_aluno_telefones.deleteMany({
+            where: {tb_aluno_matricula_aluno: matricula}
+          });
+          break;
+        }
+
+        for (const numero of telefones) {
+            if (numero.trim() === '') continue;
+
+            await prisma.tb_aluno_telefones.create({
+                data: {
+                    num_telefone_aluno: numero,
+                    tb_aluno_matricula_aluno: matricula,
+                },
+            });
+        }
 
         return NextResponse.json({ ok: true });
     } catch (error) {

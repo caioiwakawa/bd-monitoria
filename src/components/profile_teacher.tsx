@@ -12,7 +12,7 @@ function ProfileTeacher(props: {professor: Professor, matricula: string, setEdit
         });
 
         if (res.ok) {
-            console.log("Usuario removido");
+            alert("Usuario removido");
             router.push("/");
         } else {
             alert("Erro ao remover usuario");

@@ -1,11 +1,17 @@
 import Image from "next/image";
-import { Aluno } from "@/lib/type"
-import FormBox from "./form_box";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+function TelefoneInput({ index }: { index: number }) {
+    return (
+        <div className="w-92 h-20 mx-auto my-5 rounded-3xl bg-unblightblue border-2 border-black">
+            <input name={`telefones[]`} placeholder={`Telefone ${index + 1}`} className="text-2xl p-5"></input>
+        </div>
+    )
+}
 
 function EditModal(props: { setEdit: Function, matricula: string }) {
 
-    const router = useRouter();
+    const [telefonesCount, setTelefonesCount] = useState(1);
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -26,6 +32,10 @@ function EditModal(props: { setEdit: Function, matricula: string }) {
         } catch (error) {
             alert(error)
         }
+    }
+
+    function adicionarTelefone() {
+        setTelefonesCount((prev) => prev + 1); // adiciona mais um campo de telefone
     }
 
     return (
@@ -66,7 +76,22 @@ function EditModal(props: { setEdit: Function, matricula: string }) {
                 <div className="w-92 h-20 mx-auto my-5 rounded-3xl bg-unblightblue border-2 border-black">
                     <input name="curso" placeholder="Curso" className="text-2xl p-5"></input>
                 </div>
-                <div className="w-56 h-22 mx-auto my-10">
+
+                <div id="telefones-wrapper">
+                    {Array.from({ length: telefonesCount }).map((_, index) => (
+                    <TelefoneInput key={index} index={index} />
+                    ))}
+                </div>
+                <div className="w-56 h-22 mx-auto mt-10">
+                    <button
+                        type="button"
+                        onClick={adicionarTelefone}
+                    >
+                        + Adicionar outro telefone
+                    </button>
+                </div>
+
+                <div className="w-56 h-22 mx-auto mb-10">
                     <button type="submit" className="w-56 h-22 text-white text-2xl rounded-4xl bg-unbblue border-2 border-black">Salvar</button>
                 </div>
             </form>
