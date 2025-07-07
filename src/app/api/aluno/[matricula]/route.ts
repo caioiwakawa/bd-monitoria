@@ -43,23 +43,39 @@ export async function UPDATE(
     const matricula = parseInt(params.matricula);
 
     const form = await req.formData();
-    const cpf = form.get("cpf") as string;
-    const nome = form.get("nome") as string;
-    const email = form.get("email") as string;
-    const semestre = form.get("semestre") as string;
+
+    const file = form.get("foto_perfil") as File | null;
+    let fotoBuffer: Buffer | null = null;
+
+    if (file && file instanceof File) {
+        const arrayBuffer = await file.arrayBuffer();
+        fotoBuffer = Buffer.from(arrayBuffer);
+    }
+
+    const cpf_aluno = form.get("cpf") as string;
+    const nome_aluno = form.get("nome") as string;
+    const email_aluno = form.get("email") as string;
+    const semestre_ingresso_aluno = form.get("semestre") as string;
     const ira = parseFloat(form.get("ira") as string);
-    const status = form.get("status") as string;
-    const curso = form.get("curso") as string;
+    const status_aluno = form.get("status") as string;
+    const curso_aluno = form.get("curso") as string;
 
     try {
         await prisma.tb_aluno.update({
           where: { matricula_aluno: matricula },
           data: {
-
+            nome_aluno,
+            email_aluno,
+            cpf_aluno,
+            semestre_ingresso_aluno,
+            ira,
+            status_aluno,
           }
         })
+
+        return NextResponse.json({ ok: true });
     } catch (error) {
-      
+        return  NextResponse.json({ erro: "Erro ao editar usuario" }, { status: 500 })
     }
 }
 

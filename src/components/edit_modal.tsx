@@ -1,8 +1,30 @@
 import Image from "next/image";
 import { Aluno } from "@/lib/type"
 import FormBox from "./form_box";
+import { useRouter } from "next/navigation";
 
 function EditModal(props: { setEdit: Function, matricula: string }) {
+
+    const router = useRouter();
+
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+
+        const formData = new FormData(event.currentTarget);
+
+        const res = await fetch(`/api/perfil/${props.matricula}`, {
+            method: "UPDATE",
+            body: formData,
+        });
+
+        if(res.ok) {
+            alert("Usuario editado com sucesso!");
+            router.refresh();
+        } else {
+            alert("Erro ao editar usuario");
+        }
+    }
+
     return (
         <>
         <div className="fixed w-screen h-screen top-0 left-0 z-10 opacity-50 bg-white"></div>
@@ -11,11 +33,14 @@ function EditModal(props: { setEdit: Function, matricula: string }) {
             <div className="relative w-38 h-38 mx-auto top-7">
                 <Image src={`/api/foto/${props.matricula}` ? `/api/foto/${props.matricula}` : "/perfil_generico.png"} alt="Foto de Perfil" fill className="rounded-full"/>
             </div>
-            <form>
+            <form onSubmit={handleSubmit}>
                 <div className="relative w-16 h-16 -top-4 mx-auto">
-                    <button type="button">
-                        <Image src="/camera.png" alt="Mudar Foto de Perfil" fill/>
-                    </button>
+                    <input
+                        type="file"
+                        name="foto_perfil"
+                        accept="image/*"
+                        className="w-16 h-16 z-30 text-white"
+                    /> 
                 </div>
                 <div className="w-92 h-20 mx-auto my-5 rounded-3xl bg-unblightblue border-2 border-black">
                     <input name="nome" placeholder="Nome" className="text-2xl p-5"></input>

@@ -58,8 +58,6 @@ export async function POST(req: NextRequest) {
     });
   }
 
-
-
   const jaElegivel = await prisma.tb_aluno_elegivel.findUnique({
     where: { tb_aluno_matricula_aluno: matricula_aluno }
   });
