@@ -9,19 +9,22 @@ function EditModal(props: { setEdit: Function, matricula: string }) {
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-
         const formData = new FormData(event.currentTarget);
+        
+        try {
+            const res = await fetch(`/api/aluno/${props.matricula}`, {
+                method: "PUT",
+                body: formData,
+            });
 
-        const res = await fetch(`/api/perfil/${props.matricula}`, {
-            method: "UPDATE",
-            body: formData,
-        });
-
-        if(res.ok) {
-            alert("Usuario editado com sucesso!");
-            router.refresh();
-        } else {
-            alert("Erro ao editar usuario");
+            if(res.ok) {
+                alert("Usuario editado com sucesso!");
+                window.location.reload();
+            } else {
+                alert(res.status);
+            }
+        } catch (error) {
+            alert(error)
         }
     }
 
@@ -64,7 +67,7 @@ function EditModal(props: { setEdit: Function, matricula: string }) {
                     <input name="curso" placeholder="Curso" className="text-2xl p-5"></input>
                 </div>
                 <div className="w-56 h-22 mx-auto my-10">
-                    <button className="w-56 h-22 text-white text-2xl rounded-4xl bg-unbblue border-2 border-black">Salvar</button>
+                    <button type="submit" className="w-56 h-22 text-white text-2xl rounded-4xl bg-unbblue border-2 border-black">Salvar</button>
                 </div>
             </form>
         </div>

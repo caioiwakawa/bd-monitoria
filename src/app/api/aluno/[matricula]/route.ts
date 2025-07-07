@@ -36,7 +36,7 @@ export async function GET(
   }
 }
 
-export async function UPDATE(
+export async function PUT(
     req: NextRequest,
     { params }: { params: { matricula: string } }
 ) {
@@ -64,12 +64,12 @@ export async function UPDATE(
         await prisma.tb_aluno.update({
           where: { matricula_aluno: matricula },
           data: {
-            nome_aluno,
-            email_aluno,
-            cpf_aluno,
-            semestre_ingresso_aluno,
-            ira,
-            status_aluno,
+            ...(nome_aluno && {nome_aluno}),
+            ...(email_aluno && {email_aluno}),
+            ...(cpf_aluno && {cpf_aluno}),
+            ...(semestre_ingresso_aluno && {semestre_ingresso_aluno}),
+            ...(ira && {ira}),
+            ...(status_aluno && {status_aluno}),
           }
         })
 
