@@ -18,8 +18,13 @@
         "name": "next"
       }
     ],
+    // ADIÇÃO 1: Garante que os caminhos são resolvidos a partir da raiz do projeto.
+    "baseUrl": ".", 
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      // ADIÇÃO 2: Redireciona qualquer importação de '@prisma/client'
+      // para a sua pasta gerada, resolvendo o erro de tipo.
+      "@prisma/client": ["./src/generated/prisma"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
