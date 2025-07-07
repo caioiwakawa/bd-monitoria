@@ -8,3 +8,11 @@ export interface Aluno {
   status_aluno: string;
   codigo_curso: number;
 }
+
+export interface Professor {
+  matricula_professor: number;
+  nome_professor: string;
+  email_professor: string;
+  cpf_professor: string;
+  data_contratacao_professor: string; // ou Date, dependendo do seu parse
+}

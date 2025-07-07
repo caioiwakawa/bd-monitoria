@@ -5,7 +5,7 @@ import { useUser } from "@/context/UserContext";
 import { useRouter } from "next/navigation";
 
 function Header() {
-  const { matricula, logout } = useUser();
+  const { matricula, logout, tipo } = useUser();
   const router = useRouter();
 
   const fotoUrl = matricula ? `/api/foto/${matricula}` : "/default.png";
@@ -33,7 +33,7 @@ function Header() {
             <Image src="/SignOut.png" alt="Sair" fill />
           </button>
           <div
-            onClick={() => router.push(`/perfil/${matricula}`)}
+            onClick={() => router.push(tipo=="professor"?`/perfil_professor/${matricula}`:`/perfil/${matricula}`)}
             className="absolute w-11 h-11 top-6.5 right-25 rounded-full overflow-hidden cursor-pointer"
           >
             <Image src={fotoUrl} alt="Foto do aluno" fill />

@@ -75,7 +75,8 @@ export async function UPDATE(
 
         return NextResponse.json({ ok: true });
     } catch (error) {
-        return  NextResponse.json({ erro: "Erro ao editar usuario" }, { status: 500 })
+        console.error("Erro ao editar aluno", error);
+        return NextResponse.json({ erro: "Erro ao editar usuario" }, { status: 500 });
     }
 }
 
