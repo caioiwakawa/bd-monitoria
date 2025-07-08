@@ -44,7 +44,7 @@ export default function PerfilProfessor({ params }: PerfilProfessorProps) {
       try {
         const [resProfessor, resOfertas] = await Promise.all([
           fetch(`/api/professor/${matricula}`),
-          fetch(`/api/ofertas-professor?matricula=${matricula}`)
+          fetch(`/api/ofertas_professor?matricula=${matricula}`)
         ]);
         
         if (!resProfessor.ok) throw new Error("Professor não encontrado");
@@ -70,7 +70,7 @@ export default function PerfilProfessor({ params }: PerfilProfessorProps) {
     
     async function fetchCandidatos() {
       setIsLoadingCandidatos(true);
-      const res = await fetch(`/api/candidatos-oferta?codigoOferta=${selectedOfertaId}`);
+      const res = await fetch(`/api/candidatos_oferta?codigoOferta=${selectedOfertaId}`);
       if (res.ok) {
         setCandidatos(await res.json());
       }
@@ -87,7 +87,7 @@ export default function PerfilProfessor({ params }: PerfilProfessorProps) {
       return;
     }
 
-    const res = await fetch('/api/selecionar-monitor', {
+    const res = await fetch('/api/selecionar_monitor', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
