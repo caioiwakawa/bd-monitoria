@@ -109,38 +109,6 @@ export async function DELETE(
     const matricula = parseInt(params.matricula);
 
     try {
-        await prisma.tb_aluno_telefones.deleteMany({
-          where: { tb_aluno_matricula_aluno: matricula }
-        });
-
-        await prisma.tb_monitoria_tutoria.deleteMany({
-          where: { matricula_aluno_monitor_tutor: matricula }
-        })
-
-        await prisma.tb_matriculado_em_disciplina.deleteMany({
-          where: { tb_aluno_matricula: matricula }
-        })
-
-        await prisma.tb_cursou_disciplina.deleteMany({
-          where: { tb_aluno_elegivel_tb_aluno_matricula_aluno: matricula }
-        });
-
-        await prisma.tb_avaliacao_mon_tut.deleteMany({
-          where: { matricula_aluno_avaliador: matricula }
-        });
-
-        await prisma.tb_candidaturas_oferta_mon_tut.deleteMany({
-          where: { tb_aluno_elegivel_tb_aluno_matricula_aluno: matricula }
-        });
-
-        await prisma.tb_aluno_matriculado.deleteMany({
-          where: { tb_aluno_matricula_aluno: matricula }
-        });
-
-        await prisma.tb_aluno_elegivel.deleteMany({
-          where: { tb_aluno_matricula_aluno: matricula }
-        });
-
         await prisma.tb_aluno.delete({
             where: { matricula_aluno: matricula }
         });

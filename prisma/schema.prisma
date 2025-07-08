@@ -26,7 +26,7 @@ model tb_aluno {
 
 model tb_aluno_elegivel {
   tb_aluno_matricula_aluno       Int                              @id
-  tb_aluno                       tb_aluno                         @relation(fields: [tb_aluno_matricula_aluno], references: [matricula_aluno], onDelete: NoAction, onUpdate: NoAction)
+  tb_aluno                       tb_aluno                         @relation(fields: [tb_aluno_matricula_aluno], references: [matricula_aluno], onDelete: Cascade, onUpdate: NoAction)
   tb_candidaturas_oferta_mon_tut tb_candidaturas_oferta_mon_tut[]
   tb_cursou_disciplina           tb_cursou_disciplina[]
   tb_monitoria_tutoria           tb_monitoria_tutoria[]
@@ -34,7 +34,7 @@ model tb_aluno_elegivel {
 
 model tb_aluno_matriculado {
   tb_aluno_matricula_aluno     Int                            @id
-  tb_aluno                     tb_aluno                       @relation(fields: [tb_aluno_matricula_aluno], references: [matricula_aluno], onDelete: NoAction, onUpdate: NoAction)
+  tb_aluno                     tb_aluno                       @relation(fields: [tb_aluno_matricula_aluno], references: [matricula_aluno], onDelete: Cascade, onUpdate: NoAction)
   tb_avaliacao_mon_tut         tb_avaliacao_mon_tut[]
   tb_matriculado_em_disciplina tb_matriculado_em_disciplina[]
 }
@@ -42,7 +42,7 @@ model tb_aluno_matriculado {
 model tb_aluno_telefones {
   tb_aluno_matricula_aluno Int
   num_telefone_aluno       String   @unique @db.VarChar(25)
-  tb_aluno                 tb_aluno @relation(fields: [tb_aluno_matricula_aluno], references: [matricula_aluno], onDelete: NoAction, onUpdate: NoAction)
+  tb_aluno                 tb_aluno @relation(fields: [tb_aluno_matricula_aluno], references: [matricula_aluno], onDelete: Cascade, onUpdate: NoAction)
 
   @@id([tb_aluno_matricula_aluno, num_telefone_aluno])
 }
@@ -53,8 +53,8 @@ model tb_avaliacao_mon_tut {
   matricula_aluno_avaliador     Int
   nota_avaliacao                Int
   comentario_avaliacao          String               @db.VarChar(200)
-  tb_monitoria_tutoria          tb_monitoria_tutoria @relation(fields: [codigo_oferta_mon_tut, matricula_aluno_monitor_tutor], references: [codigo_oferta_mon_tut, matricula_aluno_monitor_tutor], onDelete: NoAction, onUpdate: NoAction)
-  tb_aluno_matriculado          tb_aluno_matriculado @relation(fields: [matricula_aluno_avaliador], references: [tb_aluno_matricula_aluno], onDelete: NoAction, onUpdate: NoAction)
+  tb_monitoria_tutoria          tb_monitoria_tutoria @relation(fields: [codigo_oferta_mon_tut, matricula_aluno_monitor_tutor], references: [codigo_oferta_mon_tut, matricula_aluno_monitor_tutor], onDelete: Cascade, onUpdate: NoAction)
+  tb_aluno_matriculado          tb_aluno_matriculado @relation(fields: [matricula_aluno_avaliador], references: [tb_aluno_matricula_aluno], onDelete: Cascade, onUpdate: NoAction)
 
   @@id([codigo_oferta_mon_tut, matricula_aluno_monitor_tutor, matricula_aluno_avaliador])
 }
@@ -62,8 +62,8 @@ model tb_avaliacao_mon_tut {
 model tb_candidaturas_oferta_mon_tut {
   tb_aluno_elegivel_tb_aluno_matricula_aluno Int
   tb_oferta_mon_tut_codigo_oferta_mon_tut    Int
-  tb_aluno_elegivel                          tb_aluno_elegivel @relation(fields: [tb_aluno_elegivel_tb_aluno_matricula_aluno], references: [tb_aluno_matricula_aluno], onDelete: NoAction, onUpdate: NoAction, map: "tb_candidaturas_oferta_mon_tu_tb_aluno_elegivel_tb_aluno_m_fkey")
-  tb_oferta_mon_tut                          tb_oferta_mon_tut @relation(fields: [tb_oferta_mon_tut_codigo_oferta_mon_tut], references: [codigo_oferta_mon_tut], onDelete: NoAction, onUpdate: NoAction, map: "tb_candidaturas_oferta_mon_tu_tb_oferta_mon_tut_codigo_ofe_fkey")
+  tb_aluno_elegivel                          tb_aluno_elegivel @relation(fields: [tb_aluno_elegivel_tb_aluno_matricula_aluno], references: [tb_aluno_matricula_aluno], onDelete: Cascade, onUpdate: NoAction, map: "tb_candidaturas_oferta_mon_tu_tb_aluno_elegivel_tb_aluno_m_fkey")
+  tb_oferta_mon_tut                          tb_oferta_mon_tut @relation(fields: [tb_oferta_mon_tut_codigo_oferta_mon_tut], references: [codigo_oferta_mon_tut], onDelete: Cascade, onUpdate: NoAction, map: "tb_candidaturas_oferta_mon_tu_tb_oferta_mon_tut_codigo_ofe_fkey")
 
   @@id([tb_aluno_elegivel_tb_aluno_matricula_aluno, tb_oferta_mon_tut_codigo_oferta_mon_tut])
 }
@@ -71,13 +71,13 @@ model tb_candidaturas_oferta_mon_tut {
 model tb_curso {
   codigo_curso                        Int             @unique
   tb_departamento_codigo_departamento Int
-  tb_professor_matricula_coordenador  Int
+  tb_professor_matricula_coordenador  Int?
   nome_curso                          String          @db.VarChar(50)
   nivel_curso                         String          @db.VarChar(20)
   turno_curso                         String          @db.VarChar(20)
   tb_aluno                            tb_aluno[]
   tb_departamento                     tb_departamento @relation(fields: [tb_departamento_codigo_departamento], references: [codigo_departamento], onDelete: NoAction, onUpdate: NoAction)
-  tb_professor                        tb_professor    @relation(fields: [tb_professor_matricula_coordenador], references: [matricula_professor], onDelete: Cascade, onUpdate: NoAction)
+  tb_professor                        tb_professor?   @relation(fields: [tb_professor_matricula_coordenador], references: [matricula_professor], onUpdate: NoAction)
 
   @@id([codigo_curso, tb_departamento_codigo_departamento])
 }
@@ -86,7 +86,7 @@ model tb_cursou_disciplina {
   tb_disciplina_codigo_disciplina            String            @db.VarChar(20)
   tb_aluno_elegivel_tb_aluno_matricula_aluno Int
   semestre_aprovacao                         String            @db.VarChar(45)
-  tb_aluno_elegivel                          tb_aluno_elegivel @relation(fields: [tb_aluno_elegivel_tb_aluno_matricula_aluno], references: [tb_aluno_matricula_aluno], onDelete: NoAction, onUpdate: NoAction)
+  tb_aluno_elegivel                          tb_aluno_elegivel @relation(fields: [tb_aluno_elegivel_tb_aluno_matricula_aluno], references: [tb_aluno_matricula_aluno], onDelete: Cascade, onUpdate: NoAction)
   tb_disciplina                              tb_disciplina     @relation(fields: [tb_disciplina_codigo_disciplina], references: [codigo_disciplina], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([tb_disciplina_codigo_disciplina, tb_aluno_elegivel_tb_aluno_matricula_aluno])
@@ -115,7 +115,7 @@ model tb_matriculado_em_disciplina {
   tb_turma_codigo_disciplina String               @db.VarChar(20)
   tb_turma_numero_turma      Int
   tb_turma_semestre_turma    String               @db.VarChar(20)
-  tb_aluno_matriculado       tb_aluno_matriculado @relation(fields: [tb_aluno_matricula], references: [tb_aluno_matricula_aluno], onDelete: NoAction, onUpdate: NoAction)
+  tb_aluno_matriculado       tb_aluno_matriculado @relation(fields: [tb_aluno_matricula], references: [tb_aluno_matricula_aluno], onDelete: Cascade, onUpdate: NoAction)
   tb_turma                   tb_turma             @relation(fields: [tb_turma_codigo_disciplina, tb_turma_numero_turma, tb_turma_semestre_turma], references: [tb_disciplina_codigo_disciplina, numero_turma, semestre_turma], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([tb_aluno_matricula, tb_turma_codigo_disciplina, tb_turma_numero_turma, tb_turma_semestre_turma])
@@ -126,8 +126,8 @@ model tb_monitoria_tutoria {
   matricula_aluno_monitor_tutor Int
   horario_mon_tut               String                 @db.VarChar(45)
   tb_avaliacao_mon_tut          tb_avaliacao_mon_tut[]
-  tb_oferta_mon_tut             tb_oferta_mon_tut      @relation(fields: [codigo_oferta_mon_tut], references: [codigo_oferta_mon_tut], onDelete: NoAction, onUpdate: NoAction)
-  tb_aluno_elegivel             tb_aluno_elegivel      @relation(fields: [matricula_aluno_monitor_tutor], references: [tb_aluno_matricula_aluno], onDelete: NoAction, onUpdate: NoAction)
+  tb_oferta_mon_tut             tb_oferta_mon_tut      @relation(fields: [codigo_oferta_mon_tut], references: [codigo_oferta_mon_tut], onDelete: Cascade, onUpdate: NoAction)
+  tb_aluno_elegivel             tb_aluno_elegivel      @relation(fields: [matricula_aluno_monitor_tutor], references: [tb_aluno_matricula_aluno], onDelete: Cascade, onUpdate: NoAction)
 
   @@id([codigo_oferta_mon_tut, matricula_aluno_monitor_tutor])
 }
@@ -141,7 +141,7 @@ model tb_oferta_mon_tut {
   bolsa_oferta                    Float                            @db.Real
   tb_candidaturas_oferta_mon_tut  tb_candidaturas_oferta_mon_tut[]
   tb_monitoria_tutoria            tb_monitoria_tutoria[]
-  tb_professor                    tb_professor                     @relation(fields: [matricula_professor_responsavel], references: [matricula_professor], onDelete: NoAction, onUpdate: NoAction)
+  tb_professor                    tb_professor                     @relation(fields: [matricula_professor_responsavel], references: [matricula_professor], onDelete: Cascade, onUpdate: NoAction)
   tb_ofertas_e_turmas             tb_ofertas_e_turmas[]
 }
 
@@ -151,7 +151,7 @@ model tb_ofertas_e_turmas {
   numero_turma          Int
   semestre_turma        String            @db.VarChar(20)
   tb_turma              tb_turma          @relation(fields: [codigo_disciplina, numero_turma, semestre_turma], references: [tb_disciplina_codigo_disciplina, numero_turma, semestre_turma], onDelete: NoAction, onUpdate: NoAction)
-  tb_oferta_mon_tut     tb_oferta_mon_tut @relation(fields: [codigo_oferta_mon_tut], references: [codigo_oferta_mon_tut], onDelete: NoAction, onUpdate: NoAction)
+  tb_oferta_mon_tut     tb_oferta_mon_tut @relation(fields: [codigo_oferta_mon_tut], references: [codigo_oferta_mon_tut], onDelete: Cascade, onUpdate: NoAction)
 
   @@id([codigo_oferta_mon_tut, codigo_disciplina, numero_turma, semestre_turma])
 }
@@ -172,7 +172,7 @@ model tb_professor {
 model tb_professor_telefones {
   tb_professor_matricula_professor Int
   num_telefone_professor           String       @unique @db.VarChar(25)
-  tb_professor                     tb_professor @relation(fields: [tb_professor_matricula_professor], references: [matricula_professor], onDelete: NoAction, onUpdate: NoAction)
+  tb_professor                     tb_professor @relation(fields: [tb_professor_matricula_professor], references: [matricula_professor], onDelete: Cascade, onUpdate: NoAction)
 
   @@id([tb_professor_matricula_professor, num_telefone_professor])
 }
@@ -181,11 +181,11 @@ model tb_turma {
   tb_disciplina_codigo_disciplina  String                         @db.VarChar(20)
   numero_turma                     Int
   semestre_turma                   String                         @db.VarChar(20)
-  tb_professor_matricula_professor Int
+  tb_professor_matricula_professor Int?
   tb_matriculado_em_disciplina     tb_matriculado_em_disciplina[]
   tb_ofertas_e_turmas              tb_ofertas_e_turmas[]
   tb_disciplina                    tb_disciplina                  @relation(fields: [tb_disciplina_codigo_disciplina], references: [codigo_disciplina], onDelete: NoAction, onUpdate: NoAction)
-  tb_professor                     tb_professor                   @relation(fields: [tb_professor_matricula_professor], references: [matricula_professor], onDelete: Cascade, onUpdate: NoAction)
+  tb_professor                     tb_professor?                  @relation(fields: [tb_professor_matricula_professor], references: [matricula_professor], onUpdate: NoAction)
 
   @@id([tb_disciplina_codigo_disciplina, numero_turma, semestre_turma])
 }
