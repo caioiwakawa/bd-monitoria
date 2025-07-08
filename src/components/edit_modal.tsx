@@ -14,44 +14,15 @@ function EditModal(props: { setEdit: Function, matricula: string }) {
 
     // Novos estados para os dados dinâmicos
     const [cursos, setCursos] = useState<Curso[]>([]);
-    const [disciplinas, setDisciplinas] = useState<Disciplina[]>([]);
-    const [disciplinasCursadas, setDisciplinasCursadas] = useState<Set<string>>(new Set());
-    const [disciplinasCursando, setDisciplinasCursando] = useState<Set<string>>(new Set());
-    
+
     // Efeito para buscar os dados quando o componente carrega
     useEffect(() => {
         async function fetchData() {
-            const [cursosRes, disciplinasRes] = await Promise.all([
-                fetch("/api/cursos"),
-                fetch("/api/disciplinas"),
-            ]);
+            const cursosRes = await fetch("/api/cursos");
             if (cursosRes.ok) setCursos(await cursosRes.json());
-            if (disciplinasRes.ok) setDisciplinas(await disciplinasRes.json());
         }
         fetchData();
-    }, []);
-
-    // ... (funções handleCheckboxChange e handleSubmit permanecem as mesmas da resposta anterior) ...
-    const handleCheckboxChange = (
-        codigo: string,
-        tipo: "cursadas" | "cursando"
-    ) => {
-        if (tipo === "cursadas") {
-            setDisciplinasCursadas((prev) => {
-            const novoSet = new Set(prev);
-            if (novoSet.has(codigo)) novoSet.delete(codigo);
-            else novoSet.add(codigo);
-            return novoSet;
-            });
-        } else {
-            setDisciplinasCursando((prev) => {
-            const novoSet = new Set(prev);
-            if (novoSet.has(codigo)) novoSet.delete(codigo);
-            else novoSet.add(codigo);
-            return novoSet;
-            });
-        }
-    };
+    }, []);    
 
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
