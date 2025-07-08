@@ -1,7 +1,6 @@
 "use client";
 
 import { SetStateAction, useEffect, useState } from "react";
-import Link from "next/link";
 import FeedBox from "@/components/feed_box";
 import FeedFlexBox from "@/components/feed_flexbox";
 import Header from "@/components/header";
@@ -10,6 +9,7 @@ import FormBox from "@/components/form_box";
 import { useUser } from "@/context/UserContext";
 import TurmaSelect from "@/components/turma_select";
 import ChatBox from "@/components/chat_box";
+import Image from "next/image";
 
 type Monitoria = {
   codigoOferta: number;
@@ -287,8 +287,11 @@ export default function Feed() {
         </div>
       )}
       {modalEdicaoMonitoria && (
-        <div className="modal-backdrop">
-          <div className="modal-content">
+        <>
+        <div className="fixed w-screen h-screen top-0 left-0 z-10 opacity-50 bg-black"></div>
+          <div className="absolute top-30 w-132 z-20 left-1/2 -ml-66 h-auto bg-gray-100 rounded-3xl border-2 border-unbcyan">
+            <button onClick={() => setModalEdicaoMonitoria(null)} className="absolute top-7 right-7 w-14 h-14"><Image src="/exit.png" alt="Sair" fill/></button>
+            <div className="w-92 h-40 mx-20 mt-10">
             <h2 className="mb-5">
               Edição da oferta: {modalEdicaoMonitoria.nomeDisciplina}
             </h2>
@@ -305,6 +308,7 @@ export default function Feed() {
             <p>
               bolsa cadastrada: <b>{modalEdicaoMonitoria.bolsa}</b>
             </p>
+            </div>
             <form onSubmit={handleEditarMonitoria}>
               <FormBox name="tipo" placeholder="Tipo" />
               <FormBox name="descricao" placeholder="Descrição" />
@@ -321,16 +325,13 @@ export default function Feed() {
               />
               <button
                 type="submit"
-                className="w-40 h-15 mx-46 mb-5 bg-unbblue rounded-3xl border-1 border-black text-2xl text-white"
+                className="w-40 h-15 mx-46 mb-10 bg-unbblue rounded-3xl border-1 border-black text-2xl text-white"
               >
                 Editar Oferta
               </button>
             </form>
-            <button onClick={() => setModalEdicaoMonitoria(null)}>
-              Fechar
-            </button>
           </div>
-        </div>
+          </>
       )}
 
       {/* MODAL DE INSCRIÇÃO ATUALIZADO */}
