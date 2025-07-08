@@ -11,10 +11,9 @@ function ProfileTeacher(props: {professor: Professor, matricula: string, setEdit
     const [ deletingProfile, setDeletingProfile ] = useState(false);
 
     const handleDelete = async () => {
-        if (window.confirm("Tem certeza que deseja apagar este perfil? Esta ação não pode ser desfeita.")) {
-            const res = await fetch(`/api/professor/${props.matricula}`, {
-                method: "DELETE",
-            });
+        const res = await fetch(`/api/professor/${props.matricula}`, {
+            method: "DELETE",
+        });
 
         if (res.ok) {
             router.push("/");
