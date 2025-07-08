@@ -3,23 +3,23 @@
 import { Aluno } from "@/lib/type";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 function ProfileBox(props: {aluno: Aluno, matricula: string, setEdit: (value: boolean) => void}) {
 
     const router = useRouter();
+    const [ deletingProfile, setDeletingProfile ] = useState(false);
 
     const handleDelete = async () => {
-        if (window.confirm("Tem certeza que deseja apagar este perfil? Esta ação não pode ser desfeita e irá remover todos os dados associados.")) {
-            const res = await fetch(`/api/aluno/${props.matricula}`, {
-                method: "DELETE",
-            });
+        const res = await fetch(`/api/aluno/${props.matricula}`, {
+            method: "DELETE",
+        });
 
-            if (res.ok) {
-                alert("Usuário removido com sucesso.");
-                router.push("/");
-            } else {
-                alert("Erro ao remover usuário.");
-            }
+        if (res.ok) {
+            router.push("/");
+            alert("Usuário removido com sucesso.");
+        } else {
+            alert("Erro ao remover usuário.");
         }
     }
     
@@ -51,8 +51,21 @@ function ProfileBox(props: {aluno: Aluno, matricula: string, setEdit: (value: bo
             <div className="absolute top-34 right-20 w-80 h-auto">
                 {/* O botão agora chama a função setEdit corretamente */}
                 <button type="button" onClick={() => props.setEdit(true)} className="w-80 h-13 m-2 rounded-3xl bg-blue-900 text-2xl text-white border-2 border-black">Editar Perfil</button>
-                <button type="button" onClick={handleDelete} className="w-80 h-13 m-2 rounded-3xl bg-red-400 text-2xl text-white border-2 border-black">Excluir Perfil</button>
+                <button type="button" onClick={() => setDeletingProfile(true)} className="w-80 h-13 m-2 rounded-3xl bg-red-400 text-2xl text-white border-2 border-black">Excluir Perfil</button>
             </div>
+
+            {deletingProfile && (
+                <div className="modal-backdrop">
+                    <div className="modal-content text-center">
+                        <h3 className="text-xl font-bold mb-4">Excluir Perfil</h3>
+                        <p>Tem certeza que deseja excluir seu perfil? Essa ação não pode ser revertida.</p>
+                        <div className="flex justify-center gap-4 mt-6">
+                            <button onClick={() => setDeletingProfile(false)} className="bg-gray-200 px-4 py-2 rounded">Voltar</button>
+                            <button onClick={handleDelete} className="bg-red-600 text-white px-4 py-2 rounded">Sim, Excluir</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

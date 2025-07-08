@@ -1,10 +1,12 @@
 import { Aluno, Professor } from "@/lib/type";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 function ProfileTeacher(props: {professor: Professor, matricula: string, setEdit: Function}) {
 
     const router = useRouter();
+    const [ deletingProfile, setDeletingProfile ] = useState(false);
 
     const handleDelete = async () => {
         const res = await fetch(`/api/professor/${props.matricula}`, {
@@ -12,10 +14,10 @@ function ProfileTeacher(props: {professor: Professor, matricula: string, setEdit
         });
 
         if (res.ok) {
-            alert("Usuario removido");
             router.push("/");
+            alert("Usuário removido com sucesso.");
         } else {
-            alert("Erro ao remover usuario");
+            alert("Erro ao remover usuário");
         }
     }
 
@@ -33,8 +35,21 @@ function ProfileTeacher(props: {professor: Professor, matricula: string, setEdit
 
             <div className="absolute top-34 right-20 w-80 h-auto">
                 <button type="button" onClick={() => props.setEdit(true)} className="w-80 h-13 m-2 rounded-3xl bg-blue-900 text-2xl text-white border-2 border-black">Editar Perfil</button>
-                <button type="button" onClick={handleDelete} className="w-80 h-13 m-2 rounded-3xl bg-red-400 text-2xl text-white border-2 border-black">Excluir Perfil</button>
+                <button type="button" onClick={() => setDeletingProfile(true)} className="w-80 h-13 m-2 rounded-3xl bg-red-400 text-2xl text-white border-2 border-black">Excluir Perfil</button>
             </div>
+
+            {deletingProfile && (
+                <div className="modal-backdrop">
+                    <div className="modal-content text-center">
+                        <h3 className="text-xl font-bold mb-4">Excluir Perfil</h3>
+                        <p>Tem certeza que deseja excluir seu perfil? Essa ação não pode ser revertida.</p>
+                        <div className="flex justify-center gap-4 mt-6">
+                            <button onClick={() => setDeletingProfile(false)} className="bg-gray-200 px-4 py-2 rounded">Voltar</button>
+                            <button onClick={handleDelete} className="bg-red-600 text-white px-4 py-2 rounded">Sim, Excluir</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
