@@ -77,7 +77,7 @@ model tb_curso {
   turno_curso                         String          @db.VarChar(20)
   tb_aluno                            tb_aluno[]
   tb_departamento                     tb_departamento @relation(fields: [tb_departamento_codigo_departamento], references: [codigo_departamento], onDelete: NoAction, onUpdate: NoAction)
-  tb_professor                        tb_professor?   @relation(fields: [tb_professor_matricula_coordenador], references: [matricula_professor], onUpdate: NoAction)
+  tb_professor                        tb_professor?   @relation(fields: [tb_professor_matricula_coordenador], references: [matricula_professor], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([codigo_curso, tb_departamento_codigo_departamento])
 }
@@ -185,7 +185,7 @@ model tb_turma {
   tb_matriculado_em_disciplina     tb_matriculado_em_disciplina[]
   tb_ofertas_e_turmas              tb_ofertas_e_turmas[]
   tb_disciplina                    tb_disciplina                  @relation(fields: [tb_disciplina_codigo_disciplina], references: [codigo_disciplina], onDelete: NoAction, onUpdate: NoAction)
-  tb_professor                     tb_professor?                  @relation(fields: [tb_professor_matricula_professor], references: [matricula_professor], onUpdate: NoAction)
+  tb_professor                     tb_professor?                  @relation(fields: [tb_professor_matricula_professor], references: [matricula_professor], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([tb_disciplina_codigo_disciplina, numero_turma, semestre_turma])
 }

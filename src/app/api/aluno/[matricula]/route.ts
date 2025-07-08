@@ -1,107 +1,113 @@
+// app/api/aluno/[matricula]/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"; // Use uma instância partilhada, se tiver
 
-const prisma = new PrismaClient();
-
+// GET: Busca os dados de um aluno, incluindo curso e departamento
 export async function GET(
   req: NextRequest,
   { params }: { params: { matricula: string } }
 ) {
   const matricula = parseInt(params.matricula);
+  if (isNaN(matricula)) {
+    return NextResponse.json({ erro: "Matrícula inválida" }, { status: 400 });
+  }
 
   try {
-    // Busca todos os dados do aluno EXCETO foto_perfil
     const aluno = await prisma.tb_aluno.findUnique({
       where: { matricula_aluno: matricula },
-      select: {
-        matricula_aluno: true,
-        nome_aluno: true,
-        email_aluno: true,
-        cpf_aluno: true,
-        semestre_ingresso_aluno: true,
-        ira: true,
-        status_aluno: true,
-        tb_curso_codigo_curso: true,
-        // Não incluir foto_perfil aqui!
+      include: {
+        tb_curso: {
+          include: {
+            tb_departamento: true,
+          },
+        },
+        tb_aluno_telefones: true,
       },
     });
 
     if (!aluno) {
-      return new NextResponse("Aluno não encontrado", { status: 404 });
+      return NextResponse.json({ erro: "Aluno não encontrado" }, { status: 404 });
     }
     return NextResponse.json(aluno);
   } catch (error) {
     console.error("Erro ao buscar aluno:", error);
-    return new NextResponse("Erro interno", { status: 500 });
+    return NextResponse.json({ erro: "Erro interno do servidor" }, { status: 500 });
   }
 }
 
+// PUT: Atualiza os dados de um aluno (compatível com o seu EditModal)
 export async function PUT(
-    req: NextRequest,
-    { params }: { params: { matricula: string } }
+  req: NextRequest,
+  { params }: { params: { matricula: string } }
 ) {
-    const matricula = parseInt(params.matricula);
+  const matricula = parseInt(params.matricula);
+  if (isNaN(matricula)) {
+    return NextResponse.json({ erro: "Matrícula inválida" }, { status: 400 });
+  }
 
+  try {
     const form = await req.formData();
-
-    const file = form.get("foto_perfil") as File | null;
-    let fotoBuffer: Buffer | null = null;
-
-    if (file && file instanceof File) {
-        const arrayBuffer = await file.arrayBuffer();
-        fotoBuffer = Buffer.from(arrayBuffer);
-    }
-
-    const cpf_aluno = form.get("cpf") as string;
     const nome_aluno = form.get("nome") as string;
     const email_aluno = form.get("email") as string;
+    const cpf_aluno = form.get("cpf") as string;
     const semestre_ingresso_aluno = form.get("semestre") as string;
-    const ira = parseFloat(form.get("ira") as string);
+    const iraStr = form.get("ira") as string;
     const status_aluno = form.get("status") as string;
-    const telefones = form.getAll("telefones[]") as string[]
+    const codigoCursoStr = form.get("codigo_curso") as string;
+    const telefones = form.getAll("telefones[]") as string[];
+    const file = form.get("foto_perfil") as File | null;
 
-    const tb_curso_codigo_curso = parseInt(form.get("codigo_curso") as string);
-
-    try {
-        await prisma.tb_aluno.update({
-          where: { matricula_aluno: matricula },
-          data: {
-            ...(nome_aluno && {nome_aluno}),
-            ...(email_aluno && {email_aluno}),
-            ...(cpf_aluno && {cpf_aluno}),
-            ...(semestre_ingresso_aluno && {semestre_ingresso_aluno}),
-            ...(ira && {ira}),
-            ...(status_aluno && {status_aluno}),
-            ...(tb_curso_codigo_curso && {tb_curso_codigo_curso})
-          }
-        })
-
-        for(const item of telefones) {
-          if(item === ""){ continue; }
-          await prisma.tb_aluno_telefones.deleteMany({
-            where: {tb_aluno_matricula_aluno: matricula}
-          });
-          break;
-        }
-
-        for (const numero of telefones) {
-            if (numero.trim() === '') continue;
-
-            await prisma.tb_aluno_telefones.create({
-                data: {
-                    num_telefone_aluno: numero,
-                    tb_aluno_matricula_aluno: matricula,
-                },
-            });
-        }
-
-        return NextResponse.json({ ok: true });
-    } catch (error) {
-        console.error("Erro ao editar aluno", error);
-        return NextResponse.json({ erro: "Erro ao editar usuario" }, { status: 500 });
+    let fotoBuffer: Buffer | undefined = undefined;
+    if (file && file.size > 0) {
+      fotoBuffer = Buffer.from(await file.arrayBuffer());
     }
+    
+    // Objeto para guardar apenas os campos que serão atualizados
+    const dataToUpdate: any = {};
+    if (nome_aluno) dataToUpdate.nome_aluno = nome_aluno;
+    if (email_aluno) dataToUpdate.email_aluno = email_aluno;
+    if (cpf_aluno) dataToUpdate.cpf_aluno = cpf_aluno;
+    if (semestre_ingresso_aluno) dataToUpdate.semestre_ingresso_aluno = semestre_ingresso_aluno;
+    if (iraStr) dataToUpdate.ira = parseFloat(iraStr);
+    if (status_aluno) dataToUpdate.status_aluno = status_aluno;
+    if (codigoCursoStr) dataToUpdate.tb_curso_codigo_curso = parseInt(codigoCursoStr);
+    if (fotoBuffer) dataToUpdate.foto_perfil = fotoBuffer;
+
+
+    // Usamos uma transação para garantir a consistência dos dados
+    await prisma.$transaction(async (tx) => {
+      await tx.tb_aluno.update({
+        where: { matricula_aluno: matricula },
+        data: dataToUpdate,
+      });
+
+      // Apaga TODOS os telefones antigos do aluno e insere os novos
+      await tx.tb_aluno_telefones.deleteMany({
+        where: { tb_aluno_matricula_aluno: matricula },
+      });
+
+      const telefonesData = telefones
+        .filter(tel => tel && tel.trim() !== '')
+        .map(tel => ({
+          num_telefone_aluno: tel,
+          tb_aluno_matricula_aluno: matricula,
+        }));
+
+      if (telefonesData.length > 0) {
+        await tx.tb_aluno_telefones.createMany({
+          data: telefonesData,
+        });
+      }
+    });
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error("Erro ao editar aluno:", error);
+    return NextResponse.json({ erro: "Erro ao editar usuário" }, { status: 500 });
+  }
 }
 
+// A sua função DELETE pode permanecer como está
 export async function DELETE(
     req: NextRequest,
     { params }: { params: { matricula: string } }
