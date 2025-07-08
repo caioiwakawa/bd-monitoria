@@ -177,7 +177,7 @@ export default function PerfilDiscente({ params }: PerfilAlunoProps) {
           selecoes.map((sel, index) => (
             <div key={index} className="w-254 h-auto p-4 mx-auto mb-5 content-center bg-unbblue rounded-2xl">
               <h1 className="mx-auto w-full text-white text-3xl">
-                Parabéns! Você foi selecionado para ser {sel.tipo_oferta.toLowerCase()} de {sel.nome_disciplina}
+                Parabéns! Você foi selecionado para a {sel.tipo_oferta.toLowerCase()} de {sel.nome_disciplina}
                 {sel.numero_turma && `, da turma ${sel.numero_turma}`}
               </h1>
             </div>
