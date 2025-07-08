@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Aluno } from "@/lib/type";
 import CommentBox from "@/components/comment";
+import EditModal from "@/components/edit_modal"; // Importe o seu modal existente
 
 // Tipos para os dados que vamos buscar
 type Selecao = {
@@ -15,8 +16,6 @@ type Selecao = {
   numero_turma: number;
 };
 
-// CORREÇÃO: O tipo 'MeuComentario' agora precisa de incluir a propriedade 'autor'
-// para corresponder ao que a API envia e ao que o CommentBox espera.
 type MeuComentario = {
   id_composto: any;
   comentario: string;
@@ -52,6 +51,7 @@ export default function PerfilDiscente({ params }: PerfilAlunoProps) {
   const [erro, setErro] = useState<string | null>(null);
 
   // Estados para os modais
+  const [isEditing, setIsEditing] = useState(false); // Estado para controlar o modal de edição
   const [editingComment, setEditingComment] = useState<MeuComentario | null>(null);
   const [editingText, setEditingText] = useState("");
   const [editingNota, setEditingNota] = useState(5);
@@ -65,7 +65,7 @@ export default function PerfilDiscente({ params }: PerfilAlunoProps) {
         fetch(`/api/aluno/${matricula}`),
         fetch(`/api/minhas_selecoes?matricula=${matricula}`),
         fetch(`/api/meu_comentario?matricula=${matricula}`),
-        fetch(`/api/minhas-candidaturas?matricula=${matricula}`),
+        fetch(`/api/minhas_candidaturas?matricula=${matricula}`),
       ]);
 
       if (!resAluno.ok) throw new Error("Aluno não encontrado");
@@ -131,7 +131,7 @@ export default function PerfilDiscente({ params }: PerfilAlunoProps) {
   // --- LÓGICA DE GESTÃO DE CANDIDATURAS ---
   const handleCancelCandidatura = async () => {
     if (!deletingCandidatura) return;
-    const res = await fetch('/api/minhas-candidaturas', {
+    const res = await fetch('/api/minhas_candidaturas', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -153,12 +153,24 @@ export default function PerfilDiscente({ params }: PerfilAlunoProps) {
   return (
     <main>
       <Header />
+
+      {/* RENDERIZAÇÃO CONDICIONAL DO SEU MODAL DE EDIÇÃO EXISTENTE */}
+      {isEditing && (
+        <EditModal 
+          aluno={aluno} // Passa os dados do aluno para o modal
+          matricula={matricula} 
+          setEdit={setIsEditing} // Passa a função para fechar o modal
+        />
+      )}
+
       <button type="button" onClick={() => router.back()} className="absolute top-28 left-20 w-14 h-14">
         <Image src="/arrow.png" alt="Voltar" fill />
       </button>
-      <ProfileBox aluno={aluno} matricula={matricula} setEdit={() => { /* Lógica para editar perfil */ }} />
+      
+      {/* O ProfileBox agora passa a função para ABRIR o modal */}
+      <ProfileBox aluno={aluno} matricula={matricula} setEdit={() => setIsEditing(true)} />
 
-      {/* SEÇÃO DE SELEÇÕES */}
+      {/* SEÇÃO DE SELEÇÕES RESTAURADA */}
       <div className="relative w-262 h-auto mx-auto bg-white border-2 border-t-0 border-unblightblue">
         <h1 className="relative top-2 left-2 mb-5 font-bold">Seleções</h1>
         {selecoes.length > 0 ? (
@@ -175,7 +187,7 @@ export default function PerfilDiscente({ params }: PerfilAlunoProps) {
         )}
       </div>
       
-      {/* SEÇÃO DE CANDIDATURAS */}
+      {/* SEÇÃO DE CANDIDATURAS RESTAURADA */}
       <div className="relative w-262 h-auto mx-auto bg-white border-2 border-t-0 border-unblightblue">
         <h1 className="relative top-2 left-2 mb-5 font-bold">Minhas Candidaturas</h1>
         {candidaturas.length > 0 ? (
@@ -194,7 +206,7 @@ export default function PerfilDiscente({ params }: PerfilAlunoProps) {
         )}
       </div>
 
-      {/* SEÇÃO DE COMENTÁRIOS */}
+      {/* SEÇÃO DE COMENTÁRIOS RESTAURADA */}
       <div className="relative w-262 h-auto mx-auto pb-5 bg-white border-2 border-y-0 border-unblightblue">
         <h1 className="relative top-2 left-2 mb-5 font-bold">Comentários</h1>
         {meusComentarios.length > 0 ? (
@@ -206,7 +218,7 @@ export default function PerfilDiscente({ params }: PerfilAlunoProps) {
         )}
       </div>
 
-      {/* MODAIS DE GESTÃO */}
+      {/* MODAIS DE GESTÃO RESTAURADOS */}
       {editingComment && (
         <div className="modal-backdrop">
           <div className="modal-content">

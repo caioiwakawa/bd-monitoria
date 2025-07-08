@@ -71,13 +71,13 @@ model tb_candidaturas_oferta_mon_tut {
 model tb_curso {
   codigo_curso                        Int             @unique
   tb_departamento_codigo_departamento Int
-  tb_professor_matricula_coordenador  Int
+  tb_professor_matricula_coordenador  Int?
   nome_curso                          String          @db.VarChar(50)
   nivel_curso                         String          @db.VarChar(20)
   turno_curso                         String          @db.VarChar(20)
   tb_aluno                            tb_aluno[]
   tb_departamento                     tb_departamento @relation(fields: [tb_departamento_codigo_departamento], references: [codigo_departamento], onDelete: NoAction, onUpdate: NoAction)
-  tb_professor                        tb_professor    @relation(fields: [tb_professor_matricula_coordenador], references: [matricula_professor], onDelete: Cascade, onUpdate: NoAction)
+  tb_professor                        tb_professor?   @relation(fields: [tb_professor_matricula_coordenador], references: [matricula_professor], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([codigo_curso, tb_departamento_codigo_departamento])
 }
@@ -181,11 +181,11 @@ model tb_turma {
   tb_disciplina_codigo_disciplina  String                         @db.VarChar(20)
   numero_turma                     Int
   semestre_turma                   String                         @db.VarChar(20)
-  tb_professor_matricula_professor Int
+  tb_professor_matricula_professor Int?
   tb_matriculado_em_disciplina     tb_matriculado_em_disciplina[]
   tb_ofertas_e_turmas              tb_ofertas_e_turmas[]
   tb_disciplina                    tb_disciplina                  @relation(fields: [tb_disciplina_codigo_disciplina], references: [codigo_disciplina], onDelete: NoAction, onUpdate: NoAction)
-  tb_professor                     tb_professor                   @relation(fields: [tb_professor_matricula_professor], references: [matricula_professor], onDelete: Cascade, onUpdate: NoAction)
+  tb_professor                     tb_professor?                  @relation(fields: [tb_professor_matricula_professor], references: [matricula_professor], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([tb_disciplina_codigo_disciplina, numero_turma, semestre_turma])
 }
