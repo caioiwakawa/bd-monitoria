@@ -1,17 +1,20 @@
-import { Aluno, Professor } from "@/lib/type";
+'use client'
+
+import { Professor } from "@/lib/type";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-function ProfileTeacher(props: {professor: Professor, matricula: string, setEdit: Function}) {
+function ProfileTeacher(props: {professor: Professor, matricula: string, setEdit: (value: boolean) => void}) {
 
     const router = useRouter();
     const [ deletingProfile, setDeletingProfile ] = useState(false);
 
     const handleDelete = async () => {
-        const res = await fetch(`/api/professor/${props.matricula}`, {
-            method: "DELETE",
-        });
+        if (window.confirm("Tem certeza que deseja apagar este perfil? Esta ação não pode ser desfeita.")) {
+            const res = await fetch(`/api/professor/${props.matricula}`, {
+                method: "DELETE",
+            });
 
         if (res.ok) {
             router.push("/");
@@ -20,17 +23,29 @@ function ProfileTeacher(props: {professor: Professor, matricula: string, setEdit
             alert("Erro ao remover usuário");
         }
     }
+    
+    // Usamos "optional chaining" (?.) e pegamos o primeiro curso da lista para exibir
+    const cursoCoordenado = props.professor.tb_curso?.[0];
+    const nomeDepartamento = cursoCoordenado?.tb_departamento?.nome_departamento || "Nenhum departamento associado";
 
     return (
         <div className="relative w-262 h-86 mx-auto bg-white border-2 border-t-0 border-unblightblue">
             <div className="w-full h-32 bg-unbcyan"></div>
             <div className="relative w-38 h-38 z-10 -top-19 left-20">
-                <Image src={`/api/foto/${props.matricula}` ? `/api/foto/${props.matricula}` : "/perfil_generico.png"} alt="Foto de Perfil" fill className="rounded-full"/>
+                <Image 
+                    src={`/api/foto/${props.matricula}`} 
+                    alt="Foto de Perfil" 
+                    fill 
+                    className="rounded-full object-cover"
+                    onError={(e) => { e.currentTarget.src = '/perfil_generico.png'; }}
+                />
             </div>
             <h1 className="absolute top-52 left-20 text-3xl font-medium">{props.professor.nome_professor}</h1>
+            
             <div className="relative w-8 h-7 left-20 -top-6"><Image src="/cap.png" alt="Departamento" fill/></div>
-            <h1 className="relative -top-13.5 left-30 text-lg">Departamento / Curso</h1>
-            <div className="relative w-6 h-4 left-21 -top-9"><Image src="/mail.png" alt="Departamento" fill/></div>
+            <h1 className="relative -top-13.5 left-30 text-lg">{nomeDepartamento}</h1>
+            
+            <div className="relative w-6 h-4 left-21 -top-9"><Image src="/mail.png" alt="Email" fill/></div>
             <h1 className="relative -top-15 left-30 text-lg">{props.professor.email_professor}</h1>
 
             <div className="absolute top-34 right-20 w-80 h-auto">
