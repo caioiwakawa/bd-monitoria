@@ -270,10 +270,12 @@ export default function Feed() {
               <FormBox
                 name="matricula_aluno_monitor_tutor"
                 placeholder="Matrícula do monitor de referência (opcional)"
+                required={false}
               />
               <FormBox
                 name="horario_mon_tut"
                 placeholder="Horário de atendimento do monitor de referência (obrigatório caso insira matrícula)"
+                required={false}
               />
               <button
                 type="submit"
@@ -288,26 +290,31 @@ export default function Feed() {
       )}
       {modalEdicaoMonitoria && (
         <>
-        <div className="fixed w-screen h-screen top-0 left-0 z-10 opacity-50 bg-black"></div>
+          <div className="fixed w-screen h-screen top-0 left-0 z-10 opacity-50 bg-black"></div>
           <div className="absolute top-30 w-132 z-20 left-1/2 -ml-66 h-auto bg-gray-100 rounded-3xl border-2 border-unbcyan">
-            <button onClick={() => setModalEdicaoMonitoria(null)} className="absolute top-7 right-7 w-14 h-14"><Image src="/exit.png" alt="Sair" fill/></button>
+            <button
+              onClick={() => setModalEdicaoMonitoria(null)}
+              className="absolute top-7 right-7 w-14 h-14"
+            >
+              <Image src="/exit.png" alt="Sair" fill />
+            </button>
             <div className="w-92 h-40 mx-20 mt-10">
-            <h2 className="mb-5">
-              Edição da oferta: {modalEdicaoMonitoria.nomeDisciplina}
-            </h2>
-            <p>
-              tipo cadastrado: <b>{modalEdicaoMonitoria.tipo}</b>
-            </p>
-            <p>
-              descrição cadastrada: <b>{modalEdicaoMonitoria.descricao}</b>
-            </p>
-            <p>
-              carga horária cadastrada:{" "}
-              <b>{modalEdicaoMonitoria.cargaHoraria}</b>
-            </p>
-            <p>
-              bolsa cadastrada: <b>{modalEdicaoMonitoria.bolsa}</b>
-            </p>
+              <h2 className="mb-5">
+                Edição da oferta: {modalEdicaoMonitoria.nomeDisciplina}
+              </h2>
+              <p>
+                tipo cadastrado: <b>{modalEdicaoMonitoria.tipo}</b>
+              </p>
+              <p>
+                descrição cadastrada: <b>{modalEdicaoMonitoria.descricao}</b>
+              </p>
+              <p>
+                carga horária cadastrada:{" "}
+                <b>{modalEdicaoMonitoria.cargaHoraria}</b>
+              </p>
+              <p>
+                bolsa cadastrada: <b>{modalEdicaoMonitoria.bolsa}</b>
+              </p>
             </div>
             <form onSubmit={handleEditarMonitoria}>
               <FormBox name="tipo" placeholder="Tipo" />
@@ -331,7 +338,7 @@ export default function Feed() {
               </button>
             </form>
           </div>
-          </>
+        </>
       )}
 
       {/* MODAL DE INSCRIÇÃO ATUALIZADO */}

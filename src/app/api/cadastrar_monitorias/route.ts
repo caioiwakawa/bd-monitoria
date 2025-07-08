@@ -23,13 +23,6 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!matricula_aluno_monitor_tutor || !horario_mon_tut) {
-      return NextResponse.json(
-        { error: "Dados do monitor/tutor ausentes." },
-        { status: 400 }
-      );
-    }
-
     const result = await prisma.$transaction(async (tx) => {
       // 1. Criar a oferta
       const oferta = await tx.tb_oferta_mon_tut.create({
@@ -57,13 +50,17 @@ export async function POST(request: Request) {
       }
 
       // 3. Inserir monitor/tutor vinculado à oferta
-      await tx.tb_monitoria_tutoria.create({
-        data: {
-          codigo_oferta_mon_tut: oferta.codigo_oferta_mon_tut,
-          matricula_aluno_monitor_tutor: Number(matricula_aluno_monitor_tutor),
-          horario_mon_tut,
-        },
-      });
+      if (matricula_aluno_monitor_tutor && horario_mon_tut) {
+        await tx.tb_monitoria_tutoria.create({
+          data: {
+            codigo_oferta_mon_tut: oferta.codigo_oferta_mon_tut,
+            matricula_aluno_monitor_tutor: Number(
+              matricula_aluno_monitor_tutor
+            ),
+            horario_mon_tut,
+          },
+        });
+      }
 
       // 4. Retornar oferta criada com turmas
       return tx.tb_oferta_mon_tut.findUnique({
