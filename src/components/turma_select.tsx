@@ -22,7 +22,7 @@ const TurmaSelect: React.FC<TurmaSelectProps> = ({ turmas, onSelect }) => {
   return (
     <select
       onChange={handleChange}
-      className="relative w-92 h-20 mx-20 mb-10 bg-white rounded-2xl"
+      className="relative w-92 h-20 mx-20 bg-white rounded-2xl"
     >
       <option value="">Selecionar turma</option>
       {turmas.map((turma) => (

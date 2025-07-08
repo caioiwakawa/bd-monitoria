@@ -14,7 +14,10 @@ export async function PUT(request: Request) {
       !body.bolsa
     ) {
       return NextResponse.json(
-        { error: "Todos os campos obrigatórios devem ser fornecidos" },
+        {
+          error:
+            "Todos os campos obrigatórios devem ser fornecidos e preenchidos da forma correta",
+        },
         { status: 400 }
       );
     }

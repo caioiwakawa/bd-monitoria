@@ -12,12 +12,20 @@ export async function POST(request: Request) {
       carga_horaria_oferta,
       bolsa_oferta,
       turmas,
+      matricula_aluno_monitor_tutor,
+      horario_mon_tut,
     } = body;
 
-    // Validação básica
     if (!turmas || !Array.isArray(turmas) || turmas.length === 0) {
       return NextResponse.json(
         { error: "Turmas não fornecidas." },
+        { status: 400 }
+      );
+    }
+
+    if (!matricula_aluno_monitor_tutor || !horario_mon_tut) {
+      return NextResponse.json(
+        { error: "Dados do monitor/tutor ausentes." },
         { status: 400 }
       );
     }
@@ -36,7 +44,7 @@ export async function POST(request: Request) {
         },
       });
 
-      // 2. Criar turmas associadas manualmente
+      // 2. Inserir turmas associadas
       for (const turma of turmas) {
         await tx.tb_ofertas_e_turmas.create({
           data: {
@@ -48,7 +56,16 @@ export async function POST(request: Request) {
         });
       }
 
-      // 3. Retornar oferta com turmas associadas
+      // 3. Inserir monitor/tutor vinculado à oferta
+      await tx.tb_monitoria_tutoria.create({
+        data: {
+          codigo_oferta_mon_tut: oferta.codigo_oferta_mon_tut,
+          matricula_aluno_monitor_tutor: Number(matricula_aluno_monitor_tutor),
+          horario_mon_tut,
+        },
+      });
+
+      // 4. Retornar oferta criada com turmas
       return tx.tb_oferta_mon_tut.findUnique({
         where: { codigo_oferta_mon_tut: oferta.codigo_oferta_mon_tut },
         include: {
@@ -58,8 +75,17 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(result, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Erro ao criar oferta:", error);
+
+    // Checa se é conflito de chave primária
+    if (error.code === "P2002") {
+      return NextResponse.json(
+        { error: "Monitoria/Tutoria já cadastrada para esta oferta." },
+        { status: 409 }
+      );
+    }
+
     return NextResponse.json(
       {
         error: "Erro ao criar oferta",
