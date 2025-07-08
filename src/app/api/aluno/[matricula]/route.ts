@@ -58,21 +58,9 @@ export async function PUT(
     const semestre_ingresso_aluno = form.get("semestre") as string;
     const ira = parseFloat(form.get("ira") as string);
     const status_aluno = form.get("status") as string;
-    const curso_aluno = form.get("curso") as string;
     const telefones = form.getAll("telefones[]") as string[]
 
-    let tb_curso_codigo_curso;
-
-    if(curso_aluno) {
-        const curso = await prisma.tb_curso.findFirst({
-            where: { nome_curso: curso_aluno },
-        });
-    
-        if (!curso) {
-            return NextResponse.json({ erro: "Curso não encontrado" }, { status: 400 });
-        }
-        tb_curso_codigo_curso = curso.codigo_curso;
-    }
+    const tb_curso_codigo_curso = parseInt(form.get("codigo_curso") as string);
 
     try {
         await prisma.tb_aluno.update({
@@ -123,11 +111,35 @@ export async function DELETE(
     try {
         await prisma.tb_aluno_telefones.deleteMany({
           where: { tb_aluno_matricula_aluno: matricula }
+        });
+
+        await prisma.tb_monitoria_tutoria.deleteMany({
+          where: { matricula_aluno_monitor_tutor: matricula }
         })
+
+        await prisma.tb_matriculado_em_disciplina.deleteMany({
+          where: { tb_aluno_matricula: matricula }
+        })
+
+        await prisma.tb_cursou_disciplina.deleteMany({
+          where: { tb_aluno_elegivel_tb_aluno_matricula_aluno: matricula }
+        });
+
+        await prisma.tb_avaliacao_mon_tut.deleteMany({
+          where: { matricula_aluno_avaliador: matricula }
+        });
+
+        await prisma.tb_candidaturas_oferta_mon_tut.deleteMany({
+          where: { tb_aluno_elegivel_tb_aluno_matricula_aluno: matricula }
+        });
+
+        await prisma.tb_aluno_matriculado.deleteMany({
+          where: { tb_aluno_matricula_aluno: matricula }
+        });
 
         await prisma.tb_aluno_elegivel.deleteMany({
           where: { tb_aluno_matricula_aluno: matricula }
-        })
+        });
 
         await prisma.tb_aluno.delete({
             where: { matricula_aluno: matricula }

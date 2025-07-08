@@ -1,5 +1,6 @@
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Curso, Disciplina } from "@/lib/type";
 
 function TelefoneInput({ index }: { index: number }) {
     return (
@@ -11,29 +12,66 @@ function TelefoneInput({ index }: { index: number }) {
 
 function EditModal(props: { setEdit: Function, matricula: string }) {
 
-    const [telefonesCount, setTelefonesCount] = useState(1);
+    // Novos estados para os dados dinâmicos
+    const [cursos, setCursos] = useState<Curso[]>([]);
+    const [disciplinas, setDisciplinas] = useState<Disciplina[]>([]);
+    const [disciplinasCursadas, setDisciplinasCursadas] = useState<Set<string>>(new Set());
+    const [disciplinasCursando, setDisciplinasCursando] = useState<Set<string>>(new Set());
+    
+    // Efeito para buscar os dados quando o componente carrega
+    useEffect(() => {
+        async function fetchData() {
+            const [cursosRes, disciplinasRes] = await Promise.all([
+                fetch("/api/cursos"),
+                fetch("/api/disciplinas"),
+            ]);
+            if (cursosRes.ok) setCursos(await cursosRes.json());
+            if (disciplinasRes.ok) setDisciplinas(await disciplinasRes.json());
+        }
+        fetchData();
+    }, []);
 
-    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    // ... (funções handleCheckboxChange e handleSubmit permanecem as mesmas da resposta anterior) ...
+    const handleCheckboxChange = (
+        codigo: string,
+        tipo: "cursadas" | "cursando"
+    ) => {
+        if (tipo === "cursadas") {
+            setDisciplinasCursadas((prev) => {
+            const novoSet = new Set(prev);
+            if (novoSet.has(codigo)) novoSet.delete(codigo);
+            else novoSet.add(codigo);
+            return novoSet;
+            });
+        } else {
+            setDisciplinasCursando((prev) => {
+            const novoSet = new Set(prev);
+            if (novoSet.has(codigo)) novoSet.delete(codigo);
+            else novoSet.add(codigo);
+            return novoSet;
+            });
+        }
+    };
+
+    async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
-        
-        try {
-            const res = await fetch(`/api/aluno/${props.matricula}`, {
-                method: "PUT",
-                body: formData,
-            });
 
-            if(res.ok) {
-                alert("Usuario editado com sucesso!");
-                window.location.reload();
-            } else {
-                alert(res.status);
-            }
-        } catch (error) {
-            alert(error)
+        const res = await fetch(`/api/aluno/${props.matricula}`, {
+            method: "PUT",
+            body: formData,
+        });
+
+        if (res.ok) {
+            alert("Aluno editado com sucesso!");
+            window.location.reload();
+        } else {
+            const data = await res.json();
+            alert(`Erro ao editar aluno: ${data.erro || 'Erro desconhecido'}`);
         }
     }
 
+    const [telefonesCount, setTelefonesCount] = useState(1);
     function adicionarTelefone() {
         setTelefonesCount((prev) => prev + 1); // adiciona mais um campo de telefone
     }
@@ -73,8 +111,21 @@ function EditModal(props: { setEdit: Function, matricula: string }) {
                 <div className="w-92 h-20 mx-auto my-5 rounded-3xl bg-unblightblue border-2 border-black">
                     <input name="status" placeholder="Status" className="text-2xl p-5"></input>
                 </div>
+
+                {/* CAMPO DE CURSO SUBSTITUÍDO POR UM DROPDOWN */}
                 <div className="w-92 h-20 mx-auto my-5 rounded-3xl bg-unblightblue border-2 border-black">
-                    <input name="curso" placeholder="Curso" className="text-2xl p-5"></input>
+                    <select
+                        name="codigo_curso" // O nome agora é o código, não o nome do curso
+                        className="w-full h-full px-8 rounded-2xl text-2xl"
+                        defaultValue=""
+                    >
+                        <option value="" disabled>Selecione seu curso</option>
+                        {cursos.map((curso) => (
+                            <option key={curso.codigo_curso} value={curso.codigo_curso}>
+                                {curso.nome_curso}
+                            </option>
+                        ))}
+                    </select>
                 </div>
 
                 <div id="telefones-wrapper">

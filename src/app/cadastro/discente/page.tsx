@@ -3,17 +3,7 @@ import LoginHeader from "@/components/login_header";
 import FormBox from "@/components/form_box";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-
-// Tipos para os nossos dados
-type Curso = {
-  codigo_curso: number;
-  nome_curso: string;
-};
-
-type Disciplina = {
-  codigo_disciplina: string;
-  nome_disciplina: string;
-};
+import { Curso, Disciplina } from "@/lib/type";
 
 function TelefoneInput({ index }: { index: number }) {
   return <FormBox name={`telefones[]`} placeholder={`Telefone ${index + 1}`} />;

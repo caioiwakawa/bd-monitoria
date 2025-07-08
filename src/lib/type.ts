@@ -16,3 +16,13 @@ export interface Professor {
   cpf_professor: string;
   data_contratacao_professor: string; // ou Date, dependendo do seu parse
 }
+
+export type Curso = {
+  codigo_curso: number;
+  nome_curso: string;
+};
+
+export type Disciplina = {
+  codigo_disciplina: string;
+  nome_disciplina: string;
+};
